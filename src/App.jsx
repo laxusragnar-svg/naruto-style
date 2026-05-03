@@ -28,20 +28,6 @@ const INITIAL_WINDOWS = {
     isMaximized: false,
     prevBounds: null,
   },
-  projects: {
-    id: 'projects',
-    title: 'Projects',
-    icon: 'fa-folder-open',
-    isOpen: false,
-    isMinimized: false,
-    x: 120,
-    y: 80,
-    width: 550,
-    height: 450,
-    zIndex: 2,
-    isMaximized: false,
-    prevBounds: null,
-  },
   terminal: {
     id: 'terminal',
     title: 'Terminal',
@@ -214,8 +200,22 @@ function Window({ data, onInteract, onClose, onMinimize, onMaximize, children })
     if (data.isMaximized) return;
     setIsDragging(true);
     dragRef.current = {
-      startX: e.clientX,
-      startY: e.clientY,
+      startX: e.clientX || e.touches?.[0]?.clientX || 0,
+      startY: e.clientY || e.touches?.[0]?.clientY || 0,
+      initialX: position.x,
+      initialY: position.y
+    };
+  };
+
+  const handleTouchStart = (e) => {
+    if (e.target.closest('.mac-btn') || e.target.closest('.calc-btn') || e.target.tagName === 'INPUT') return;
+    onInteract(data.id);
+    if (data.isMaximized) return;
+    setIsDragging(true);
+    const touch = e.touches[0];
+    dragRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
       initialX: position.x,
       initialY: position.y
     };
@@ -229,14 +229,27 @@ function Window({ data, onInteract, onClose, onMinimize, onMaximize, children })
         y: Math.max(32, dragRef.current.initialY + (e.clientY - dragRef.current.startY))
       });
     };
+    const handleTouchMove = (e) => {
+      if (!isDragging) return;
+      const touch = e.touches[0];
+      setPosition({
+        x: dragRef.current.initialX + (touch.clientX - dragRef.current.startX),
+        y: Math.max(32, dragRef.current.initialY + (touch.clientY - dragRef.current.startY))
+      });
+    };
     const handleMouseUp = () => setIsDragging(false);
+    const handleTouchEnd = () => setIsDragging(false);
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleTouchEnd);
     }
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
     };
   }, [isDragging]);
 
@@ -299,7 +312,7 @@ function Window({ data, onInteract, onClose, onMinimize, onMaximize, children })
       style={{ left: position.x, top: position.y, width: size.width, height: size.height, zIndex: data.zIndex }}
       onClick={() => onInteract(data.id)}
     >
-      <div className="mac-titlebar" onDoubleClick={() => onMaximize(data.id)} onMouseDown={handleMouseDown}>
+      <div className="mac-titlebar" onDoubleClick={() => onMaximize(data.id)} onMouseDown={handleMouseDown} onTouchStart={handleTouchStart}>
         <div className="mac-controls">
           <button className="mac-btn btn-close" onClick={(e) => { e.stopPropagation(); onClose(data.id); }}><i className="fas fa-times"></i></button>
           <button className="mac-btn btn-min" onClick={(e) => { e.stopPropagation(); onMinimize(data.id); }}><i className="fas fa-minus"></i></button>
@@ -462,12 +475,12 @@ function TerminalWindow({ isDark }) {
         break;
 
       case 'whoami':
-        newHistory.push({ type: 'output', text: 'maximino-olbido' });
+        newHistory.push({ type: 'output', text: 'ambotsaemo' });
         break;
 
       case 'neofetch':
         newHistory.push({ type: 'output', text: `
-       .--.        maximino-olbido@shinobios
+       .--.        ambotsaemo@portfolioos
       |o_o |       -----------------------
       |:_/ |       OS: ShinobiOS 2.0 (Canvas Edition)
      //   \\ \\      Host: MacBook Pro (Portfolio)
@@ -862,6 +875,42 @@ function SnakeGame({ accentColor }) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [gameState]);
 
+  const handleTouchStart = (e) => {
+    if (gameState !== 'playing') return;
+    const game = gameRef.current;
+    const opposites = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
+    const touch = e.touches[0];
+    const startX = touch.clientX;
+    const startY = touch.clientY;
+
+    const handleTouchMove = (e) => {
+      e.preventDefault();
+      const moveTouch = e.touches[0];
+      const deltaX = moveTouch.clientX - startX;
+      const deltaY = moveTouch.clientY - startY;
+      
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        const newDir = deltaX > 0 ? 'RIGHT' : 'LEFT';
+        if (newDir !== opposites[game.direction]) {
+          game.nextDirection = newDir;
+        }
+      } else {
+        const newDir = deltaY > 0 ? 'DOWN' : 'UP';
+        if (newDir !== opposites[game.direction]) {
+          game.nextDirection = newDir;
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd);
+  };
+
   useEffect(() => {
     draw();
   }, [draw]);
@@ -872,11 +921,11 @@ function SnakeGame({ accentColor }) {
         <span>Score: <span className="score">{score}</span></span>
         <span>High: <span className="high-score">{highScore}</span></span>
       </div>
-      <canvas ref={canvasRef} width={CANVAS_SIZE} height={CANVAS_SIZE} className="snake-canvas" />
+      <canvas ref={canvasRef} width={CANVAS_SIZE} height={CANVAS_SIZE} className="snake-canvas" onTouchStart={handleTouchStart} />
       {gameState === 'idle' && (
         <div className="snake-overlay">
           <h2>Snake Game</h2>
-          <p>Use arrow keys or WASD to move</p>
+          <p>Use arrow keys, WASD, or swipe to move</p>
           <button className="game-btn" onClick={initGame}>Start Game</button>
         </div>
       )}
@@ -885,6 +934,16 @@ function SnakeGame({ accentColor }) {
           <h2>Game Over!</h2>
           <p>Score: {score}</p>
           <button className="game-btn" onClick={initGame}>Play Again</button>
+        </div>
+      )}
+      {gameState === 'playing' && (
+        <div className="snake-mobile-controls">
+          <button className="snake-d-btn" onClick={() => { if (gameRef.current.direction !== 'DOWN') gameRef.current.nextDirection = 'UP'; }}><i className="fas fa-chevron-up"></i></button>
+          <div className="snake-d-row">
+            <button className="snake-d-btn" onClick={() => { if (gameRef.current.direction !== 'RIGHT') gameRef.current.nextDirection = 'LEFT'; }}><i className="fas fa-chevron-left"></i></button>
+            <button className="snake-d-btn" onClick={() => { if (gameRef.current.direction !== 'LEFT') gameRef.current.nextDirection = 'RIGHT'; }}><i className="fas fa-chevron-right"></i></button>
+          </div>
+          <button className="snake-d-btn" onClick={() => { if (gameRef.current.direction !== 'UP') gameRef.current.nextDirection = 'DOWN'; }}><i className="fas fa-chevron-down"></i></button>
         </div>
       )}
     </div>
@@ -1172,7 +1231,7 @@ function FileManagerApp() {
       {viewingResume && (
         <div className="fm-pdf-viewer" onClick={() => setViewingResume(false)}>
           <div className="fm-pdf-viewer-content" onClick={(e) => e.stopPropagation()}>
-            <button className="fm-pdf-close" onClick={() => setViewingResume(false)}><i className="fas fa-times"></i></button>
+           
             <iframe src="/olbido.pdf" title="Resume" />
           </div>
         </div>
@@ -1352,7 +1411,15 @@ function ChromeApp() {
 
 function MusicPlayerApp({ accentColor }) {
   const [tracks] = useState([
-    { id: 1, title: 'Naruto Main Theme', artist: 'Toshio Masuda', duration: '3:42', cover: '🍃', url: '/music1.mp3' },
+    { id: 1, title: 'Remember Me', artist: 'Renz Verano', duration: '4:12', cover: '/rememberme.png', url: '/music1.mp3' },
+    { id: 2, title: 'Take Me To Church', artist: 'Hozier', duration: '4:02', cover: '/hozier.jpg', url: '/Take_Me_To_Church.mp3' },
+    { id: 3, title: 'The Drug In Me Is You', artist: 'Falling In Reverse', duration: '3:33', cover: '/fallinginreverse.jpg', url: '/The_Drug_In_Me_Is_You.mp3' },
+    { id: 4, title: 'This Love', artist: 'Maroon 5', duration: '3:48', cover: '/maroon5.jpg', url: '/This_Love.mp3' },
+    { id: 5, title: 'Thnks fr th Mmrs', artist: 'Fall Out Boy', duration: '3:32', cover: '/fall-out-boy-a23t9jwqsxhrvuxb.jpg', url: '/Thnks_fr_th_Mmrs.mp3' },
+    { id: 6, title: 'Tongue Tied', artist: 'Grouplove', duration: '3:42', cover: '/grouplove.jpg', url: '/Tongue_Tied.mp3' },
+    { id: 7, title: 'Toxicity', artist: 'System Of A Down', duration: '3:39', cover: '/systemofadown.jpg', url: '/Toxicity.mp3' },
+    { id: 8, title: 'Welcome To The Black Parade', artist: 'My Chemical Romance', duration: '5:10', cover: '/Welcome_to_the_Black_Parade.png', url: '/Welcome_to_the_Black_Parade.mp3' },
+    { id: 9, title: 'Stigmatized', artist: 'Artist', duration: '3:50', cover: '/Stigmatized.png', url: '/Stigmatized.mp3' },
   ]);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -1363,7 +1430,7 @@ function MusicPlayerApp({ accentColor }) {
   const audioRef = useRef(null);
 
   useEffect(() => {
-    const audio = new Audio(tracks[0].url);
+    const audio = new Audio(tracks[currentTrack].url);
     audio.volume = volume;
     audioRef.current = audio;
 
@@ -1390,7 +1457,17 @@ function MusicPlayerApp({ accentColor }) {
       audio.pause();
       audio.src = '';
     };
-  }, []);
+  }, [currentTrack]);
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = 0;
+    setProgress(0);
+    setCurrentTime('0:00');
+    if (isPlaying) {
+      audioRef.current.play().catch(() => {});
+    }
+  }, [currentTrack]);
 
   useEffect(() => {
     if (!audioRef.current) return;
@@ -1417,27 +1494,11 @@ function MusicPlayerApp({ accentColor }) {
   };
 
   const handleNext = () => {
-    setProgress(0);
-    setCurrentTime('0:00');
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
-    }
+    setCurrentTrack((prev) => (prev + 1) % tracks.length);
   };
 
   const handlePrev = () => {
-    if (progress > 10) {
-      setProgress(0);
-      setCurrentTime('0:00');
-      if (audioRef.current) audioRef.current.currentTime = 0;
-    } else {
-      setProgress(0);
-      setCurrentTime('0:00');
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current.play().catch(() => {});
-      }
-    }
+    setCurrentTrack((prev) => (prev - 1 + tracks.length) % tracks.length);
   };
 
   const track = tracks[currentTrack];
@@ -1445,7 +1506,7 @@ function MusicPlayerApp({ accentColor }) {
   return (
     <div className="music-player">
       <div className="music-cover">
-        <div className="music-cover-art">{track?.cover || '🎵'}</div>
+        <div className="music-cover-art"><img src={track?.cover} alt={track?.title} /></div>
       </div>
       <div className="music-info">
         <h3 className="music-title">{track?.title || 'No Track Selected'}</h3>
@@ -1474,12 +1535,12 @@ function MusicPlayerApp({ accentColor }) {
       </div>
       <div className="music-playlist-header">
         <span>Playlist</span>
-        <span className="music-track-count">1 track</span>
+        <span className="music-track-count">{tracks.length} tracks</span>
       </div>
       <div className="music-playlist">
         {tracks.map((t, i) => (
           <div key={t.id} className={`playlist-track ${i === currentTrack ? 'active' : ''}`} onClick={() => { setCurrentTrack(i); setProgress(0); setIsPlaying(true); if (audioRef.current) { audioRef.current.currentTime = 0; audioRef.current.play().catch(() => {}); } }}>
-            <span className="playlist-track-cover">{t.cover}</span>
+            <span className="playlist-track-cover"><img src={t.cover} alt={t.title} /></span>
             <div className="playlist-track-info">
               <span className="playlist-track-title">{t.title}</span>
               <span className="playlist-track-artist">{t.artist}</span>
@@ -1492,8 +1553,7 @@ function MusicPlayerApp({ accentColor }) {
   );
 }
 
-function WifiPanel({ isOpen, onClose }) {
-  const [wifiOn, setWifiOn] = useState(true);
+function WifiPanel({ isOpen, onClose, wifiOn, setWifiOn }) {
   const [connected, setConnected] = useState('Konoha-Network-5G');
 
   const networks = [
@@ -1898,7 +1958,7 @@ export default function App() {
         </div>
       )}
 
-      <WifiPanel isOpen={showWifi} onClose={() => setShowWifi(false)} />
+      <WifiPanel isOpen={showWifi} onClose={() => setShowWifi(false)} wifiOn={wifiOn} setWifiOn={setWifiOn} />
       <ControlCenter isOpen={showControlCenter} onClose={() => setShowControlCenter(false)} isDark={isDark} setIsDark={setIsDark} wifiOn={wifiOn} setWifiOn={setWifiOn} onToggleTheme={() => setIsDark(!isDark)} />
       <NotificationPanel isOpen={showNotifications} onClose={() => setShowNotifications(false)} />
       <SpotlightSearch isOpen={showSpotlight} onClose={() => setShowSpotlight(false)} onOpenApp={handleSpotlightOpenApp} />
@@ -1906,11 +1966,11 @@ export default function App() {
       <Window data={windows.about} onInteract={focusWindow} onClose={closeWindow} onMinimize={minimizeWindow} onMaximize={maximizeWindow}>
         <div className="about-content">
           <div className="about-avatar"><i className="fas fa-user-ninja"></i></div>
-          <h2>Maximino Olbido Jr.</h2>
-          <p className="about-role">Full-Stack IT Specialist</p>
-          <p className="about-school">Tagoloan Community College (GWA: 1.67)</p>
+          <h2>Maximino Jr. Olbido</h2>
+          <p className="about-role">Full-Stack Developer & IT Specialist</p>
+          <p className="about-school">BS Information Technology — Tagoloan Community College (GWA: 1.67)</p>
           <p className="about-desc">
-            Welcome to my workspace! I am an IT professional in my fourth year, actively building solutions as part of Team PAWIX. I specialize in bridging hardware functionality and full-stack software development.
+            Passionate IT professional with expertise in full-stack development, system administration, and network infrastructure. Currently contributing to Team PAWIX, delivering end-to-end software solutions and technical support. Proven track record in building scalable web applications, managing database systems, and deploying cloud-based services with a focus on performance and reliability.
           </p>
           <div className="about-links">
             <a href="mailto:olbidojunex@gmail.com"><i className="fas fa-envelope"></i> Email</a>

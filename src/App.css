@@ -836,6 +836,7 @@ body {
   border: 2px solid var(--border);
   border-radius: 8px;
   background: #1a1a2e;
+  image-rendering: pixelated;
 }
 
 .snake-overlay {
@@ -881,6 +882,41 @@ body {
 .game-btn:hover {
   transform: scale(1.05);
   filter: brightness(1.1);
+}
+
+.snake-mobile-controls {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.snake-d-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  border: 2px solid var(--accent);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.snake-d-btn:active {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(0.92);
+}
+
+.snake-d-row {
+  display: flex;
+  gap: 6px;
 }
 
 /* SETTINGS */
@@ -1293,43 +1329,50 @@ body {
 .fm-pdf-viewer {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.92);
+  background: rgba(0, 0, 0, 0.95);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
   animation: fadeIn 0.2s;
+  border-radius: 0 0 12px 12px;
 }
 
 .fm-pdf-viewer-content {
   position: relative;
-  width: 90vw;
-  height: 90vh;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .fm-pdf-viewer-content iframe {
   width: 100%;
   height: 100%;
   border: none;
-  border-radius: 10px;
   background: #fff;
+  pointer-events: auto;
 }
 
 .fm-pdf-close {
   position: absolute;
-  top: -40px;
-  right: 0;
-  background: none;
-  border: none;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   color: #fff;
-  font-size: 24px;
+  font-size: 18px;
   cursor: pointer;
-  padding: 8px;
-  transition: transform 0.15s;
+  padding: 10px;
+  border-radius: 50%;
+  z-index: 101;
+  transition: transform 0.15s, background 0.15s;
 }
 
 .fm-pdf-close:hover {
-  transform: scale(1.2);
+  transform: scale(1.15);
+  background: var(--accent);
 }
 
 /* PROJECT VIEW */
@@ -2791,13 +2834,14 @@ body {
   width: 140px;
   height: 140px;
   border-radius: 16px;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 30%, transparent), color-mix(in srgb, var(--accent) 10%, transparent));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 56px;
+  overflow: hidden;
   box-shadow: 0 8px 30px color-mix(in srgb, var(--accent) 25%, transparent);
-  animation: albumFloat 3s ease-in-out infinite;
+}
+
+.music-cover-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 @keyframes albumFloat {
@@ -2987,9 +3031,17 @@ body {
 }
 
 .playlist-track-cover {
-  font-size: 20px;
-  width: 32px;
-  text-align: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.playlist-track-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .playlist-track-info {
@@ -3016,4 +3068,692 @@ body {
 .playlist-track-duration {
   font-size: 11px;
   color: var(--os-text-muted);
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+  .menubar {
+    height: 44px;
+    padding: 0 12px;
+    font-size: 14px;
+  }
+
+  .menu-left, .menu-right {
+    gap: 12px;
+  }
+
+  .menu-item {
+    font-size: 14px;
+  }
+
+  .menu-leaf {
+    font-size: 18px;
+  }
+
+  .desktop-icons {
+    top: 54px;
+    right: 10px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  .desktop-icon {
+    width: 60px;
+    padding: 8px;
+  }
+
+  .desktop-icon i {
+    font-size: 24px;
+  }
+
+  .desktop-icon span {
+    font-size: 9px;
+  }
+
+  .mac-window {
+    position: fixed !important;
+    left: 0 !important;
+    top: 44px !important;
+    width: 100vw !important;
+    height: calc(100vh - 44px - 70px) !important;
+    border-radius: 0 !important;
+    border: none !important;
+    min-width: unset !important;
+    min-height: unset !important;
+  }
+
+  .mac-window.maximized {
+    height: calc(100vh - 44px) !important;
+  }
+
+  .resize-handle {
+    display: none;
+  }
+
+  .mac-titlebar {
+    height: 44px;
+    padding: 0 12px;
+  }
+
+  .mac-controls {
+    gap: 10px;
+    left: 12px;
+  }
+
+  .mac-btn {
+    width: 16px;
+    height: 16px;
+  }
+
+  .mac-btn i {
+    font-size: 9px;
+  }
+
+  .window-title {
+    font-size: 15px;
+  }
+
+  .mac-content {
+    padding: 0;
+  }
+
+  .dock-container {
+    bottom: 8px;
+    padding: 6px 10px;
+    gap: 6px;
+    border-radius: 16px;
+    overflow-x: auto;
+    max-width: calc(100vw - 16px);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .dock-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dock-item {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .dock-item:hover {
+    transform: scale(1.2) translateY(-8px);
+  }
+
+  .dock-separator {
+    height: 30px;
+    margin: 0 2px;
+  }
+
+  .dock-tooltip {
+    display: none;
+  }
+
+  .about-content {
+    padding: 20px;
+  }
+
+  .about-avatar {
+    width: 70px;
+    height: 70px;
+    font-size: 32px;
+  }
+
+  .about-content h2 {
+    font-size: 18px;
+  }
+
+  .about-role {
+    font-size: 14px;
+  }
+
+  .about-school {
+    font-size: 12px;
+  }
+
+  .about-desc {
+    font-size: 13px;
+    padding: 0 10px;
+  }
+
+  .about-links {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .about-links a {
+    padding: 12px 16px;
+    font-size: 14px;
+    justify-content: center;
+  }
+
+  .projects-content {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .project-card-new {
+    padding: 14px;
+  }
+
+  .project-card-new h3 {
+    font-size: 14px;
+  }
+
+  .project-card-new p {
+    font-size: 12px;
+  }
+
+  .tag {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .terminal-output {
+    padding: 12px;
+    font-size: 12px;
+  }
+
+  .terminal-input-line {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .calculator {
+    padding: 14px;
+  }
+
+  .calc-display {
+    font-size: 28px;
+    padding: 16px;
+    min-height: 60px;
+  }
+
+  .calc-buttons {
+    gap: 8px;
+  }
+
+  .calc-btn {
+    font-size: 16px;
+    border-radius: 8px;
+  }
+
+  .snake-game {
+    padding: 12px;
+  }
+
+  .snake-canvas {
+    width: 100% !important;
+    max-width: 320px;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
+  }
+
+  .snake-mobile-controls {
+    display: flex;
+  }
+
+  .snake-header {
+    font-size: 13px;
+  }
+
+  .settings-app {
+    padding: 14px;
+  }
+
+  .settings-section {
+    margin-bottom: 18px;
+  }
+
+  .settings-section h3 {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  .setting-row {
+    padding: 10px 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .setting-row label {
+    font-size: 13px;
+  }
+
+  .wallpaper-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .wallpaper-option {
+    height: 50px;
+  }
+
+  .system-info {
+    border-radius: 8px;
+  }
+
+  .info-row {
+    padding: 8px 12px;
+    font-size: 12px;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .file-manager {
+    height: 100%;
+  }
+
+  .fm-toolbar {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .fm-path {
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .fm-content {
+    padding: 12px;
+  }
+
+  .fm-grid {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 12px;
+  }
+
+  .fm-item {
+    padding: 10px 6px;
+  }
+
+  .fm-item i, .fm-gallery-item i {
+    font-size: 28px;
+  }
+
+  .fm-name {
+    font-size: 10px;
+  }
+
+  .fm-gallery-view {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .fm-gallery-item img {
+    height: 60px;
+  }
+
+  .fm-gallery-name {
+    font-size: 9px;
+  }
+
+  .fm-project-list {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .fm-project-item {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .fm-project-item i {
+    font-size: 24px;
+  }
+
+  .fm-project-item-name {
+    font-size: 13px;
+  }
+
+  .fm-project-item-desc {
+    font-size: 11px;
+  }
+
+  .fm-project-view {
+    padding: 14px;
+  }
+
+  .fm-back-to-projects {
+    font-size: 12px;
+  }
+
+  .gallery-app {
+    height: 100%;
+  }
+
+  .gallery-header {
+    padding: 12px 14px;
+  }
+
+  .gallery-header h3 {
+    font-size: 13px;
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .gallery-item img {
+    height: 70px;
+  }
+
+  .gallery-item-name {
+    font-size: 10px;
+  }
+
+  .gallery-filter-bar {
+    padding: 8px 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .gallery-filter-btn {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+
+  .chrome-toolbar {
+    padding: 6px 8px;
+    gap: 6px;
+  }
+
+  .chrome-nav-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+
+  .chrome-url-bar {
+    padding: 6px 10px;
+  }
+
+  .chrome-url-bar input {
+    font-size: 12px;
+  }
+
+  .wifi-panel, .control-center, .notification-panel {
+    position: fixed;
+    top: 48px;
+    right: 8px;
+    left: 8px;
+    width: auto;
+    max-width: calc(100vw - 16px);
+    z-index: 99999 !important;
+  }
+
+  .calendar-dropdown {
+    top: 48px;
+    right: 8px;
+    z-index: 99999 !important;
+  }
+
+  .calendar-widget {
+    width: calc(100vw - 16px);
+    max-width: 300px;
+  }
+
+  .spotlight-search {
+    width: calc(100vw - 32px);
+    max-width: 500px;
+  }
+
+  .spotlight-input-wrap {
+    padding: 12px 16px;
+  }
+
+  .spotlight-input-wrap input {
+    font-size: 16px;
+  }
+
+  .spotlight-results {
+    max-height: 250px;
+  }
+
+  .modal {
+    width: calc(100vw - 32px);
+    padding: 20px;
+  }
+
+  .modal h3 {
+    font-size: 16px;
+  }
+
+  .modal p {
+    font-size: 13px;
+  }
+
+  .music-cover-art {
+    width: 110px;
+    height: 110px;
+  }
+
+  .music-title {
+    font-size: 14px;
+  }
+
+  .music-artist {
+    font-size: 12px;
+  }
+
+  .music-ctrl-btn.play-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 16px;
+  }
+
+  .playlist-track {
+    padding: 8px 10px;
+  }
+
+  .playlist-track-cover {
+    font-size: 18px;
+    width: 28px;
+  }
+
+  .playlist-track-title {
+    font-size: 12px;
+  }
+
+  .playlist-track-artist {
+    font-size: 10px;
+  }
+
+  .playlist-track-duration {
+    font-size: 10px;
+  }
+
+  .fm-image-viewer-content {
+    max-width: 95vw;
+  }
+
+  .fm-pdf-viewer-content {
+    width: 95vw;
+    height: 85vh;
+  }
+
+  .gallery-modal-content {
+    max-width: 95vw;
+  }
+
+  .resume-modal {
+    width: calc(100vw - 32px);
+    max-height: 75vh;
+  }
+
+  .resume-header {
+    padding: 12px 16px;
+  }
+
+  .resume-header h3 {
+    font-size: 13px;
+  }
+
+  .resume-content {
+    padding: 16px;
+    max-height: 60vh;
+  }
+
+  .resume-section h4 {
+    font-size: 13px;
+  }
+
+  .resume-section p {
+    font-size: 12px;
+  }
+
+  .notif-item {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .notif-app {
+    font-size: 10px;
+  }
+
+  .notif-content h4 {
+    font-size: 12px;
+  }
+
+  .notif-content p {
+    font-size: 11px;
+  }
+
+  .cc-grid {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .cc-card {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .cc-card i {
+    font-size: 18px;
+  }
+
+  .cc-card div span {
+    font-size: 12px;
+  }
+
+  .cc-card div small {
+    font-size: 10px;
+  }
+
+  .cc-slider-row {
+    padding: 6px 12px;
+  }
+
+  .wifi-networks {
+    padding: 10px 12px;
+  }
+
+  .wifi-network {
+    padding: 8px;
+  }
+
+  .wifi-net-name {
+    font-size: 12px;
+  }
+
+  .wifi-net-sec {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .menubar {
+    height: 40px;
+    padding: 0 8px;
+  }
+
+  .menu-left .menu-item:not(.menu-leaf):not(.menu-active) {
+    display: none;
+  }
+
+  .menu-left {
+    gap: 8px;
+  }
+
+  .menu-right {
+    gap: 10px;
+  }
+
+  .menu-leaf {
+    font-size: 16px;
+  }
+
+  .menu-active {
+    font-size: 13px;
+  }
+
+  .desktop-icons {
+    display: none;
+  }
+
+  .mac-window {
+    top: 40px !important;
+    height: calc(100vh - 40px - 64px) !important;
+  }
+
+  .mac-titlebar {
+    height: 40px;
+  }
+
+  .dock-container {
+    bottom: 6px;
+    padding: 5px 8px;
+    gap: 4px;
+  }
+
+  .dock-item {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+
+  .dock-separator {
+    height: 26px;
+  }
+
+  .calc-display {
+    font-size: 24px;
+    padding: 12px;
+  }
+
+  .calc-btn {
+    font-size: 14px;
+  }
+
+  .wallpaper-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gallery-filter-bar {
+    justify-content: space-between;
+  }
+
+  .spotlight-search {
+    width: calc(100vw - 16px);
+  }
+
+  .modal {
+    width: calc(100vw - 16px);
+    padding: 16px;
+  }
 }
