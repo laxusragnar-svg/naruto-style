@@ -5,12 +5,36 @@ const ADMIN_PASSWORD = 'handsome123';
 
 function loadSettings() {
   try {
+    const urlParams = new URLSearchParams(window.location.hash.slice(1));
+    if (urlParams.toString()) {
+      return {
+        wallpaper: urlParams.get('wp') || undefined,
+        customWallpaper: urlParams.get('cwp') || undefined,
+        isDark: urlParams.get('dark') !== null ? urlParams.get('dark') === '1' : undefined,
+        accentColor: urlParams.get('ac') || undefined,
+      };
+    }
     const saved = localStorage.getItem('shinobios-settings');
     if (saved) {
       return JSON.parse(saved);
     }
   } catch (e) {}
   return null;
+}
+
+function saveSettingsToURL(settings) {
+  const params = new URLSearchParams();
+  if (settings.wallpaper && settings.wallpaper !== 'default') params.set('wp', settings.wallpaper);
+  if (settings.customWallpaper) params.set('cwp', settings.customWallpaper);
+  if (settings.isDark !== undefined) params.set('dark', settings.isDark ? '1' : '0');
+  if (settings.accentColor && settings.accentColor !== '#ff6600') params.set('ac', settings.accentColor);
+
+  const newHash = params.toString();
+  if (newHash) {
+    window.location.hash = newHash;
+  } else {
+    window.location.hash = '';
+  }
 }
 
 const INITIAL_WINDOWS = {
@@ -1789,6 +1813,7 @@ export default function App() {
   const [showSpotlight, setShowSpotlight] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [wifiOn, setWifiOn] = useState(true);
+  const [dockHidden, setDockHidden] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -1824,6 +1849,7 @@ export default function App() {
   useEffect(() => {
     const settings = { wallpaper, customWallpaper, isDark, accentColor };
     localStorage.setItem('shinobios-settings', JSON.stringify(settings));
+    saveSettingsToURL(settings);
   }, [wallpaper, customWallpaper, isDark, accentColor]);
 
   const wallpapers = {
@@ -1992,7 +2018,10 @@ export default function App() {
         <MusicPlayerApp accentColor={accentColor} />
       </Window>
 
-      <div className="dock-container">
+      <button className="dock-toggle" onClick={() => setDockHidden(!dockHidden)}>
+        <i className={`fas ${dockHidden ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
+      </button>
+      <div className={`dock-container ${dockHidden ? 'dock-hidden' : ''}`}>
         {Object.values(windows).map((win) => (
           <div
             key={win.id}
