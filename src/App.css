@@ -31,44 +31,134 @@ body {
 .boot-screen {
   position: fixed;
   inset: 0;
-  background: #0a0a10;
+  background: linear-gradient(135deg, #0a0a10 0%, #1a1a2e 50%, #16213e 100%);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 99999;
+  overflow: hidden;
+}
+
+.boot-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.boot-particle {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  background: var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: particleFloat 3s ease-in-out infinite;
+  animation-delay: var(--delay);
+}
+
+@keyframes particleFloat {
+  0%, 100% { opacity: 0; transform: translateY(0) scale(0); }
+  50% { opacity: 0.6; transform: translateY(-100px) scale(1); }
+}
+
+.boot-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  animation: contentFadeIn 0.8s ease-out;
+}
+
+@keyframes contentFadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .boot-logo {
-  font-size: 60px;
+  font-size: 80px;
   color: var(--accent);
-  animation: bootPulse 1.5s ease-in-out infinite;
-  margin-bottom: 40px;
+  animation: bootPulse 2s ease-in-out infinite, bootRotate 4s linear infinite;
+  filter: drop-shadow(0 0 20px var(--accent));
 }
 
 @keyframes bootPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.95); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+@keyframes bootRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.boot-text {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  animation: textGlow 2s ease-in-out infinite;
+}
+
+@keyframes textGlow {
+  0%, 100% { text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent); }
+  50% { text-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent), 0 0 60px var(--accent); }
 }
 
 .boot-progress {
-  width: 200px;
+  width: 250px;
   height: 4px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  border-radius: 4px;
   overflow: hidden;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
 .boot-progress-bar {
   height: 100%;
-  background: var(--accent);
-  border-radius: 2px;
-  animation: bootLoad 2s ease-in-out forwards;
+  background: linear-gradient(90deg, var(--accent), #fff, var(--accent));
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: bootLoad 2s ease-in-out forwards, shimmer 1.5s linear infinite;
 }
 
 @keyframes bootLoad {
   0% { width: 0; }
   100% { width: 100%; }
+}
+
+@keyframes shimmer {
+   0% { background-position: 200% 0; }
+   100% { background-position: -200% 0; }
+}
+
+.boot-hint {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 2px;
+  animation: hintPulse 2s ease-in-out infinite;
+}
+
+@keyframes hintPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.boot-loading-text {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 2px;
+  animation: loadingDots 1.5s steps(4, end) infinite;
+}
+
+@keyframes loadingDots {
+  0% { content: 'Loading amazing things'; }
+  25% { content: 'Loading amazing things.'; }
+  50% { content: 'Loading amazing things..'; }
+  75% { content: 'Loading amazing things...'; }
 }
 
 /* MAIN OS WRAPPER - DARK */

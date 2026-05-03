@@ -169,7 +169,7 @@ const FILE_SYSTEM = {
 
 const PROJECT_DETAILS = [
   { title: 'Malnutrition Profiling System (MPMS)', desc: 'System designed to monitor and manage nutritional data for community health initiatives.', tags: ['Full-Stack', 'Database', 'PHP'], url: 'https://bns-santacruz.com' },
-  { title: "Librong James POS", desc: 'Point of Sale system for Car Accessories inventory management and transaction tracking.', tags: ['Laravel', 'PHP', 'Render'], url: 'https://pos-librongjames.onrender.com' },
+  { title: "Librong James POS", desc: 'Point of Sale system for Car Accessories inventory management and transaction tracking.', tags: ['Laravel', 'PHP', 'Render'], url: 'https://pos.bns-santacruz.onrender.com' },
   { title: 'Goldtown Inventory', desc: 'Robust inventory tracking application for precise stock management.', tags: ['Supabase', 'Vercel'], url: 'https://inventory-goldtown.onrender.com' },
 ];
 
@@ -480,9 +480,9 @@ function TerminalWindow({ isDark }) {
 
       case 'neofetch':
         newHistory.push({ type: 'output', text: `
-       .--.        ambotsaemo@portfolioos
+       .--.        ambotsaemo@shinobios
       |o_o |       -----------------------
-      |:_/ |       OS: ShinobiOS 2.0 (Canvas Edition)
+      |:_/ |       OS: CodeOS 2.0 (Canvas Edition)
      //   \\ \\      Host: MacBook Pro (Portfolio)
     (|     | )      Kernel: React 19.2.0
    /'\\_   _/\`\\     Shell: jutsu.sh
@@ -1050,7 +1050,7 @@ function SettingsApp({ wallpaper, setWallpaper, isDark, setIsDark, accentColor, 
       <div className="settings-section">
         <h3><i className="fas fa-info-circle"></i> System Info</h3>
         <div className="system-info">
-          <div className="info-row"><span>OS</span><span>ShinobiOS 2.0 Canvas Edition</span></div>
+          <div className="info-row"><span>OS</span><span>CodeOS 2.0 Canvas Edition</span></div>
           <div className="info-row"><span>Processor</span><span>Apple M2</span></div>
           <div className="info-row"><span>Memory</span><span>16 GB</span></div>
           <div className="info-row"><span>Storage</span><span>512 GB SSD</span></div>
@@ -1258,20 +1258,15 @@ function formatTimeFromSeconds(secs) {
 
 function GalleryApp() {
   const [images] = useState([
-    { id: 1, name: 'Profile', url: '/profile.png', date: '2024-01-15', category: 'favorite' },
-    { id: 2, name: 'Profile 1', url: '/profile1.png', date: '2024-02-20', category: 'favorite' },
-    { id: 3, name: 'Banner', url: '/banner.png', date: '2024-03-10', category: 'hobbies' },
-    { id: 4, name: 'Akatsuki', url: '/akatsuki.png', date: '2024-04-05', category: 'hobbies' },
-    { id: 5, name: 'Konoha', url: '/konoha.png', date: '2024-05-18', category: 'hobbies' },
-    { id: 6, name: 'POS System', url: '/pos.png', date: '2024-06-22', category: 'hobbies' },
-    { id: 7, name: 'BNS', url: '/bns.png', date: '2024-07-10', category: 'hobbies' },
-    { id: 8, name: 'Propesiya', url: '/propesiya.png', date: '2024-08-15', category: 'sunset' },
-    { id: 9, name: 'Certificate 1', url: '/cert1.png', date: '2024-09-01', category: 'other' },
-    { id: 10, name: 'Certificate 2', url: '/cert2.png', date: '2024-09-15', category: 'food' },
-    { id: 11, name: 'Certificate 3', url: '/cert3.png', date: '2024-10-01', category: 'food' },
-    { id: 12, name: 'Certificate 4', url: '/cert4.png', date: '2024-10-15', category: 'sunset' },
-    { id: 13, name: 'Certificate 5', url: '/cert5.png', date: '2024-11-01', category: 'sunset' },
-    { id: 14, name: 'My Pet', url: '/profile.png', date: '2024-12-01', category: 'pet' },
+    { id: 1, name: 'Favorite 1', url: '/favorite1.jpg', date: '2024-01-15', category: 'favorite' },
+    { id: 2, name: 'Favorite 2', url: '/favorite2.jpg', date: '2024-02-20', category: 'favorite' },
+    { id: 3, name: 'Favorite 3', url: '/favorite3.jpg', date: '2024-03-10', category: 'favorite' },
+    { id: 4, name: 'Favorite 4', url: '/favorite4.jpg', date: '2024-04-05', category: 'favorite' },
+    { id: 5, name: 'Favorite 5', url: '/favorite5.jpg', date: '2024-05-18', category: 'favorite' },
+    { id: 6, name: 'My Pet 1', url: '/pet1.jpg', date: '2024-06-22', category: 'pet' },
+    { id: 7, name: 'My Pet 2', url: '/pet2.jpg', date: '2024-07-10', category: 'pet' },
+    { id: 8, name: 'Sunset View', url: '/sunset.jpg', date: '2024-08-15', category: 'sunset' },
+    { id: 9, name: 'Gaming', url: '/game.jpg', date: '2024-09-01', category: 'game' },
   ]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [filter, setFilter] = useState('all');
@@ -1307,10 +1302,7 @@ function GalleryApp() {
         <button className={`gallery-filter-btn ${filter === 'sunset' ? 'active' : ''}`} onClick={() => setFilter('sunset')} title="Sunsets">
           <i className="fas fa-sun"></i>
         </button>
-        <button className={`gallery-filter-btn ${filter === 'food' ? 'active' : ''}`} onClick={() => setFilter('food')} title="Food">
-          <i className="fas fa-utensils"></i>
-        </button>
-        <button className={`gallery-filter-btn ${filter === 'hobbies' ? 'active' : ''}`} onClick={() => setFilter('hobbies')} title="Hobbies">
+        <button className={`gallery-filter-btn ${filter === 'game' ? 'active' : ''}`} onClick={() => setFilter('game')} title="Gaming">
           <i className="fas fa-gamepad"></i>
         </button>
       </div>
@@ -1557,11 +1549,11 @@ function WifiPanel({ isOpen, onClose, wifiOn, setWifiOn }) {
   const [connected, setConnected] = useState('Konoha-Network-5G');
 
   const networks = [
-    { name: 'Konoha-Network-5G', signal: 4, secured: true },
-    { name: 'Hidden Leaf Cafe', signal: 3, secured: true },
-    { name: 'Akatsuki-Lair', signal: 2, secured: true },
-    { name: 'Team7-Guest', signal: 3, secured: false },
-    { name: 'Hokage-Office', signal: 4, secured: true },
+    { name: 'Sihayon-Network-5G', signal: 4, secured: true },
+    { name: 'loveu123', signal: 3, secured: true },
+    { name: 'oumkie', signal: 2, secured: true },
+    { name: 'paloadlods', signal: 3, secured: false },
+    { name: 'pisutkamedina', signal: 4, secured: true },
   ];
 
   if (!isOpen) return null;
@@ -1652,7 +1644,7 @@ function ControlCenter({ isOpen, onClose, isDark, setIsDark, wifiOn, setWifiOn, 
 
 function NotificationPanel({ isOpen, onClose }) {
   const [notifications, setNotifications] = useState([
-    { id: 1, app: 'System', title: 'Welcome to ShinobiOS', body: 'Your portfolio OS is ready to use.', time: 'Now' },
+    { id: 1, app: 'System', title: 'Welcome to CodeOS', body: 'Your portfolio OS is ready to use.', time: 'Now' },
     { id: 2, app: 'Mail', title: 'New message from HR', body: 'Your application has been received.', time: '5m ago' },
     { id: 3, app: 'Calendar', title: 'Team meeting', body: 'Team PAWIX sync at 2:00 PM', time: '1h ago' },
   ]);
@@ -1788,13 +1780,7 @@ export default function App() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSpotlight, setShowSpotlight] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [bootScreen, setBootScreen] = useState(true);
   const [wifiOn, setWifiOn] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setBootScreen(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -1906,27 +1892,14 @@ export default function App() {
     { id: 'settings', icon: 'fa-gear', label: 'Settings' },
   ];
 
-  if (bootScreen) {
-    return (
-      <div className="boot-screen">
-        <div className="boot-logo">
-          <i className="fas fa-leaf"></i>
-        </div>
-        <div className="boot-progress">
-          <div className="boot-progress-bar"></div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={`os-wrapper ${isDark ? 'dark' : 'light'}`} style={getBackground()}>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
       <div className="menubar">
         <div className="menu-left">
-          <span className="menu-item menu-leaf" onClick={() => setShowSpotlight(true)}><i className="fas fa-leaf"></i></span>
-          <span className="menu-item menu-active">ShinobiOS</span>
+          <span className="menu-item menu-leaf" onClick={() => setShowSpotlight(true)}><i className="fas fa-code"></i></span>
+          <span className="menu-item menu-active">CodeOS</span>
           <span className="menu-item" onClick={() => openWindow('about')}>File</span>
           <span className="menu-item">Edit</span>
           <span className="menu-item">View</span>
@@ -1968,9 +1941,9 @@ export default function App() {
           <div className="about-avatar"><i className="fas fa-user-ninja"></i></div>
           <h2>Maximino Jr. Olbido</h2>
           <p className="about-role">Full-Stack Developer & IT Specialist</p>
-          <p className="about-school">BS Information Technology — Tagoloan Community College (GWA: 1.67)</p>
+          <p className="about-school">BS Information Technology — Tagoloan Community College</p>
           <p className="about-desc">
-            Passionate IT professional with expertise in full-stack development, system administration, and network infrastructure. Currently contributing to Team PAWIX, delivering end-to-end software solutions and technical support. Proven track record in building scalable web applications, managing database systems, and deploying cloud-based services with a focus on performance and reliability.
+            Dedicated IT professional specializing in full-stack development and system infrastructure. Currently part of Team PAWIX, where I develop comprehensive web solutions and provide technical expertise. Experienced in building scalable applications, database management, and cloud service deployment with emphasis on performance optimization and clean code practices.
           </p>
           <div className="about-links">
             <a href="mailto:olbidojunex@gmail.com"><i className="fas fa-envelope"></i> Email</a>
