@@ -5,36 +5,12 @@ const ADMIN_PASSWORD = 'handsome123';
 
 function loadSettings() {
   try {
-    const urlParams = new URLSearchParams(window.location.hash.slice(1));
-    if (urlParams.toString()) {
-      return {
-        wallpaper: urlParams.get('wp') || undefined,
-        customWallpaper: urlParams.get('cwp') || undefined,
-        isDark: urlParams.get('dark') !== null ? urlParams.get('dark') === '1' : undefined,
-        accentColor: urlParams.get('ac') || undefined,
-      };
-    }
     const saved = localStorage.getItem('shinobios-settings');
     if (saved) {
       return JSON.parse(saved);
     }
   } catch (e) {}
   return null;
-}
-
-function saveSettingsToURL(settings) {
-  const params = new URLSearchParams();
-  if (settings.wallpaper && settings.wallpaper !== 'default') params.set('wp', settings.wallpaper);
-  if (settings.customWallpaper) params.set('cwp', settings.customWallpaper);
-  if (settings.isDark !== undefined) params.set('dark', settings.isDark ? '1' : '0');
-  if (settings.accentColor && settings.accentColor !== '#ff6600') params.set('ac', settings.accentColor);
-
-  const newHash = params.toString();
-  if (newHash) {
-    window.location.hash = newHash;
-  } else {
-    window.location.hash = '';
-  }
 }
 
 const INITIAL_WINDOWS = {
@@ -984,6 +960,13 @@ function SettingsApp({ wallpaper, setWallpaper, isDark, setIsDark, accentColor, 
 
   const wallpapers = [
     { id: 'default', name: 'Naruto Dark', gradient: 'radial-gradient(circle at 20% 30%, #2a0800 0%, #0a0a10 50%, #051020 100%)' },
+    { id: 'goth', name: 'Goth', video: '/goth.mp4' },
+    { id: 'celestial-veil', name: 'Celestial Veil', video: '/celestial-veil.3840x2160.mp4' },
+    { id: 'hunt-showdown', name: 'Hunt Showdown', video: '/hunt-showdown-skull-guns.3840x2160.mp4' },
+    { id: 'levi-ackerman', name: 'Levi Ackerman', video: '/levi-ackerman.1920x1080.mp4' },
+    { id: 'makima-eyes', name: 'Makima Eyes', video: '/makima-eyes.3840x2160.mp4' },
+    { id: 'power', name: 'Power', video: '/power.3840x2160.mp4' },
+    { id: 'chika', name: 'Chika Fujiwara', image: '/chika.jpg' },
     { id: 'ocean', name: 'Ocean Blue', gradient: 'radial-gradient(circle at 30% 40%, #001a33 0%, #003366 40%, #001122 100%)' },
     { id: 'forest', name: 'Forest Green', gradient: 'radial-gradient(circle at 40% 30%, #0a2a0a 0%, #1a3a1a 50%, #0a1a0a 100%)' },
     { id: 'sunset', name: 'Sunset', gradient: 'radial-gradient(circle at 50% 60%, #3a1a00 0%, #1a0a2a 50%, #0a0a1a 100%)' },
@@ -1055,7 +1038,12 @@ function SettingsApp({ wallpaper, setWallpaper, isDark, setIsDark, accentColor, 
         <h3><i className="fas fa-image"></i> Wallpaper</h3>
         <div className="wallpaper-grid">
           {wallpapers.map(wp => (
-            <button key={wp.id} className={`wallpaper-option ${wallpaper === wp.id ? 'selected' : ''}`} style={{ background: wp.gradient }} onClick={() => requestPasswordForSetting({ type: 'wallpaper', wallpaperId: wp.id })}>
+            <button key={wp.id} className={`wallpaper-option ${wallpaper === wp.id ? 'selected' : ''}`} style={
+              wp.video ? { background: '#000', position: 'relative' } :
+              wp.image ? { backgroundImage: `url(${wp.image})`, backgroundSize: 'cover', backgroundPosition: 'center' } :
+              { background: wp.gradient }
+            } onClick={() => requestPasswordForSetting({ type: 'wallpaper', wallpaperId: wp.id })}>
+              {wp.video && <i className="fas fa-video" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '24px', color: '#fff' }}></i>}
               <span>{wp.name}</span>
             </button>
           ))}
@@ -1803,7 +1791,7 @@ export default function App() {
   const [passwordError, setPasswordError] = useState('');
 
   const savedSettings = loadSettings();
-  const [wallpaper, setWallpaper] = useState(savedSettings?.wallpaper || 'default');
+  const [wallpaper, setWallpaper] = useState(savedSettings?.wallpaper || 'levi-ackerman');
   const [customWallpaper, setCustomWallpaper] = useState(savedSettings?.customWallpaper || null);
   const [isDark, setIsDark] = useState(savedSettings?.isDark ?? true);
   const [accentColor, setAccentColor] = useState(savedSettings?.accentColor || '#ff6600');
@@ -1849,11 +1837,17 @@ export default function App() {
   useEffect(() => {
     const settings = { wallpaper, customWallpaper, isDark, accentColor };
     localStorage.setItem('shinobios-settings', JSON.stringify(settings));
-    saveSettingsToURL(settings);
   }, [wallpaper, customWallpaper, isDark, accentColor]);
 
   const wallpapers = {
     default: 'radial-gradient(circle at 20% 30%, #2a0800 0%, #0a0a10 50%, #051020 100%)',
+    goth: { type: 'video', src: '/goth.mp4' },
+    'celestial-veil': { type: 'video', src: '/celestial-veil.3840x2160.mp4' },
+    'hunt-showdown': { type: 'video', src: '/hunt-showdown-skull-guns.3840x2160.mp4' },
+    'levi-ackerman': { type: 'video', src: '/levi-ackerman.1920x1080.mp4' },
+    'makima-eyes': { type: 'video', src: '/makima-eyes.3840x2160.mp4' },
+    'power': { type: 'video', src: '/power.3840x2160.mp4' },
+    chika: 'url(/chika.jpg)',
     ocean: 'radial-gradient(circle at 30% 40%, #001a33 0%, #003366 40%, #001122 100%)',
     forest: 'radial-gradient(circle at 40% 30%, #0a2a0a 0%, #1a3a1a 50%, #0a1a0a 100%)',
     sunset: 'radial-gradient(circle at 50% 60%, #3a1a00 0%, #1a0a2a 50%, #0a0a1a 100%)',
@@ -1865,7 +1859,13 @@ export default function App() {
     if (wallpaper === 'custom' && customWallpaper) {
       return { backgroundImage: `url(${customWallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center' };
     }
-    return { background: wallpapers[wallpaper] || wallpapers.default };
+    if (wallpapers[wallpaper]?.type === 'video') {
+      return { background: '#000' };
+    }
+    if (wallpaper === 'chika') {
+      return { backgroundImage: 'url(/chika.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' };
+    }
+    return { background: wallpapers[wallpaper]?.gradient || wallpapers.default };
   };
 
   const openWindow = (id) => {
@@ -1929,6 +1929,21 @@ export default function App() {
   return (
     <div className={`os-wrapper ${isDark ? 'dark' : 'light'}`} style={getBackground()}>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+      {wallpapers[wallpaper]?.type === 'video' && (
+        <video autoPlay loop muted playsInline key={wallpaper} style={{
+          position: 'fixed',
+          top:0,
+          left:0,
+          width: '100vw',
+          height: '100vh',
+          objectFit: 'cover',
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}>
+          <source src={wallpapers[wallpaper].src} type="video/mp4" />
+        </video>
+      )}
 
       <div className="menubar">
         <div className="menu-left">
