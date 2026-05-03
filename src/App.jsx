@@ -1090,6 +1090,14 @@ function FileManagerApp() {
   const [viewingImage, setViewingImage] = useState(null);
   const [viewingProject, setViewingProject] = useState(null);
   const [viewingResume, setViewingResume] = useState(false);
+  const [visitorCount, setVisitorCount] = useState(0);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('visitorCount');
+    const newCount = stored ? parseInt(stored) + 1 : 1;
+    localStorage.setItem('visitorCount', newCount);
+    setVisitorCount(newCount);
+  }, []);
 
   const items = FILE_SYSTEM[currentPath] || [];
   const isCertificatesFolder = currentPath === '/Certificates';
@@ -1224,7 +1232,7 @@ function FileManagerApp() {
               </div>
             )}
           </div>
-          <div className="fm-status">{items.length} items</div>
+          <div className="fm-status">{items.length} items | {visitorCount} visitors</div>
         </>
       )}
 
