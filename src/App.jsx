@@ -1,6 +1,18 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import './App.css';
 
+const ADMIN_PASSWORD = 'handsome123';
+
+function loadSettings() {
+  try {
+    const saved = localStorage.getItem('shinobios-settings');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (e) {}
+  return null;
+}
+
 const INITIAL_WINDOWS = {
   about: {
     id: 'about',
@@ -8,11 +20,13 @@ const INITIAL_WINDOWS = {
     icon: 'fa-user-ninja',
     isOpen: false,
     isMinimized: false,
-    x: window.innerWidth / 2 - 400,
-    y: 80,
+    x: 80,
+    y: 60,
     width: 500,
-    height: 400,
+    height: 420,
     zIndex: 3,
+    isMaximized: false,
+    prevBounds: null,
   },
   projects: {
     id: 'projects',
@@ -20,11 +34,13 @@ const INITIAL_WINDOWS = {
     icon: 'fa-folder-open',
     isOpen: false,
     isMinimized: false,
-    x: window.innerWidth / 2 + 50,
-    y: 150,
+    x: 120,
+    y: 80,
     width: 550,
     height: 450,
     zIndex: 2,
+    isMaximized: false,
+    prevBounds: null,
   },
   terminal: {
     id: 'terminal',
@@ -32,11 +48,13 @@ const INITIAL_WINDOWS = {
     icon: 'fa-terminal',
     isOpen: false,
     isMinimized: false,
-    x: 100,
+    x: 160,
     y: 100,
     width: 600,
     height: 420,
     zIndex: 1,
+    isMaximized: false,
+    prevBounds: null,
   },
   calculator: {
     id: 'calculator',
@@ -44,11 +62,13 @@ const INITIAL_WINDOWS = {
     icon: 'fa-calculator',
     isOpen: false,
     isMinimized: false,
-    x: 400,
-    y: 150,
+    x: 200,
+    y: 120,
     width: 280,
-    height: 400,
+    height: 420,
     zIndex: 0,
+    isMaximized: false,
+    prevBounds: null,
   },
   game: {
     id: 'game',
@@ -56,11 +76,13 @@ const INITIAL_WINDOWS = {
     icon: 'fa-gamepad',
     isOpen: false,
     isMinimized: false,
-    x: 200,
-    y: 100,
+    x: 240,
+    y: 80,
     width: 420,
     height: 480,
     zIndex: 0,
+    isMaximized: false,
+    prevBounds: null,
   },
   settings: {
     id: 'settings',
@@ -68,11 +90,13 @@ const INITIAL_WINDOWS = {
     icon: 'fa-gear',
     isOpen: false,
     isMinimized: false,
-    x: 300,
-    y: 120,
-    width: 500,
-    height: 400,
+    x: 280,
+    y: 60,
+    width: 520,
+    height: 420,
     zIndex: 0,
+    isMaximized: false,
+    prevBounds: null,
   },
   files: {
     id: 'files',
@@ -80,20 +104,76 @@ const INITIAL_WINDOWS = {
     icon: 'fa-folder',
     isOpen: false,
     isMinimized: false,
-    x: 150,
-    y: 80,
+    x: 320,
+    y: 100,
     width: 550,
     height: 400,
     zIndex: 0,
+    isMaximized: false,
+    prevBounds: null,
+  },
+  gallery: {
+    id: 'gallery',
+    title: 'Gallery',
+    icon: 'fa-images',
+    isOpen: false,
+    isMinimized: false,
+    x: 100,
+    y: 90,
+    width: 600,
+    height: 460,
+    zIndex: 0,
+    isMaximized: false,
+    prevBounds: null,
+  },
+  chrome: {
+    id: 'chrome',
+    title: 'Chrome',
+    icon: 'fa-globe',
+    isOpen: false,
+    isMinimized: false,
+    x: 140,
+    y: 70,
+    width: 750,
+    height: 500,
+    zIndex: 0,
+    isMaximized: false,
+    prevBounds: null,
+  },
+  music: {
+    id: 'music',
+    title: 'Music Player',
+    icon: 'fa-music',
+    isOpen: false,
+    isMinimized: false,
+    x: 180,
+    y: 110,
+    width: 380,
+    height: 480,
+    zIndex: 0,
+    isMaximized: false,
+    prevBounds: null,
   }
 };
 
 const FILE_SYSTEM = {
-  '/': ['Home', 'Documents', 'Downloads', 'Pictures', 'Projects'],
-  '/Home': ['Desktop', '.bashrc', '.config'],
-  '/Documents': ['resume.pdf', 'notes.txt', 'portfolio-plan.md'],
-  '/Downloads': ['setup.dmg', 'image.png', 'archive.zip'],
-  '/Pictures': ['wallpaper.jpg', 'avatar.png', 'screenshot.png'],
+  '/': ['Skills', 'Background', 'Certificates', 'Hobbies', 'Projects', 'Resume'],
+  '/Skills': ['Frontend', 'Backend', 'Databases', 'Tools'],
+  '/Skills/Frontend': ['React', 'Tailwind CSS', 'JavaScript', 'Alpine.js'],
+  '/Skills/Backend': ['Laravel', 'PHP'],
+  '/Skills/Databases': ['MySQL', 'SQLite', 'Supabase'],
+  '/Skills/Tools': ['Vercel', 'Render', 'Canva', 'Adobe Photoshop', 'Git'],
+  '/Background': ['Education', 'Experience'],
+  '/Background/Education': ['Tagoloan Community College - BS Information Technology 4th Year (GWA: 1.67)'],
+  '/Background/Experience': ['Team PAWIX - IT Specialist & Full-Stack Developer', 'PC Diagnostics, Network Configuration, CCTV & Biometric Setup'],
+  '/Certificates': [
+    { name: 'cert1.png', type: 'image', url: '/cert1.png' },
+    { name: 'cert2.png', type: 'image', url: '/cert2.png' },
+    { name: 'cert3.png', type: 'image', url: '/cert3.png' },
+    { name: 'cert4.png', type: 'image', url: '/cert4.png' },
+    { name: 'cert5.png', type: 'image', url: '/cert5.png' },
+  ],
+  '/Hobbies': ['Gaming', 'Coding', 'Music', 'Exploring Technology'],
   '/Projects': ['portfolio', 'mpms', 'pos-system', 'inventory-app'],
   '/Projects/portfolio': ['index.html', 'App.jsx', 'App.css', 'package.json'],
   '/Projects/mpms': ['README.md', 'index.php', 'database.sql'],
@@ -101,15 +181,37 @@ const FILE_SYSTEM = {
   '/Projects/inventory-app': ['src/', 'public/', '.env', 'package.json'],
 };
 
+const PROJECT_DETAILS = [
+  { title: 'Malnutrition Profiling System (MPMS)', desc: 'System designed to monitor and manage nutritional data for community health initiatives.', tags: ['Full-Stack', 'Database', 'PHP'], url: 'https://bns-santacruz.com' },
+  { title: "Librong James POS", desc: 'Point of Sale system for Car Accessories inventory management and transaction tracking.', tags: ['Laravel', 'PHP', 'Render'], url: 'https://pos-librongjames.onrender.com' },
+  { title: 'Goldtown Inventory', desc: 'Robust inventory tracking application for precise stock management.', tags: ['Supabase', 'Vercel'], url: 'https://inventory-goldtown.onrender.com' },
+];
+
 function Window({ data, onInteract, onClose, onMinimize, onMaximize, children }) {
   const [position, setPosition] = useState({ x: data.x, y: data.y });
   const [size, setSize] = useState({ width: data.width, height: data.height || 400 });
   const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
   const dragRef = useRef({ startX: 0, startY: 0, initialX: 0, initialY: 0 });
+  const resizeRef = useRef({ direction: null, startX: 0, startY: 0, initialWidth: 0, initialHeight: 0, initialX: 0, initialY: 0 });
+
+  useEffect(() => {
+    if (data.isMaximized) {
+      setSize({ width: window.innerWidth, height: window.innerHeight - 32 });
+      setPosition({ x: 0, y: 32 });
+    } else if (data.prevBounds) {
+      setSize({ width: data.prevBounds.width, height: data.prevBounds.height });
+      setPosition({ x: data.prevBounds.x, y: data.prevBounds.y });
+    } else {
+      setSize({ width: data.width, height: data.height || 400 });
+      setPosition({ x: data.x, y: data.y });
+    }
+  }, [data.isMaximized]);
 
   const handleMouseDown = (e) => {
     if (e.target.closest('.mac-btn') || e.target.closest('.calc-btn') || e.target.tagName === 'INPUT') return;
     onInteract(data.id);
+    if (data.isMaximized) return;
     setIsDragging(true);
     dragRef.current = {
       startX: e.clientX,
@@ -124,7 +226,7 @@ function Window({ data, onInteract, onClose, onMinimize, onMaximize, children })
       if (!isDragging) return;
       setPosition({
         x: dragRef.current.initialX + (e.clientX - dragRef.current.startX),
-        y: Math.max(30, dragRef.current.initialY + (e.clientY - dragRef.current.startY))
+        y: Math.max(32, dragRef.current.initialY + (e.clientY - dragRef.current.startY))
       });
     };
     const handleMouseUp = () => setIsDragging(false);
@@ -138,23 +240,86 @@ function Window({ data, onInteract, onClose, onMinimize, onMaximize, children })
     };
   }, [isDragging]);
 
+  const handleResizeStart = (direction, e) => {
+    e.stopPropagation();
+    if (data.isMaximized) return;
+    setIsResizing(true);
+    resizeRef.current = {
+      direction,
+      startX: e.clientX,
+      startY: e.clientY,
+      initialWidth: size.width,
+      initialHeight: size.height,
+      initialX: position.x,
+      initialY: position.y
+    };
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isResizing) return;
+      const deltaX = e.clientX - resizeRef.current.startX;
+      const deltaY = e.clientY - resizeRef.current.startY;
+      const dir = resizeRef.current.direction;
+      let newWidth = resizeRef.current.initialWidth;
+      let newHeight = resizeRef.current.initialHeight;
+      let newX = resizeRef.current.initialX;
+      let newY = resizeRef.current.initialY;
+
+      if (dir.includes('e')) newWidth = Math.max(300, resizeRef.current.initialWidth + deltaX);
+      if (dir.includes('s')) newHeight = Math.max(200, resizeRef.current.initialHeight + deltaY);
+      if (dir.includes('w')) {
+        newWidth = Math.max(300, resizeRef.current.initialWidth - deltaX);
+        if (newWidth > 300) newX = resizeRef.current.initialX + deltaX;
+      }
+      if (dir.includes('n')) {
+        newHeight = Math.max(200, resizeRef.current.initialHeight - deltaY);
+        if (newHeight > 200) newY = resizeRef.current.initialY + deltaY;
+      }
+
+      setSize({ width: newWidth, height: newHeight });
+      setPosition({ x: newX, y: Math.max(32, newY) });
+    };
+    const handleMouseUp = () => setIsResizing(false);
+    if (isResizing) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
+
   if (!data.isOpen || data.isMinimized) return null;
 
   return (
     <div
-      className="mac-window"
+      className={`mac-window ${data.isMaximized ? 'maximized' : ''}`}
       style={{ left: position.x, top: position.y, width: size.width, height: size.height, zIndex: data.zIndex }}
       onClick={() => onInteract(data.id)}
     >
-      <div className="mac-titlebar" onMouseDown={handleMouseDown}>
+      <div className="mac-titlebar" onDoubleClick={() => onMaximize(data.id)} onMouseDown={handleMouseDown}>
         <div className="mac-controls">
           <button className="mac-btn btn-close" onClick={(e) => { e.stopPropagation(); onClose(data.id); }}><i className="fas fa-times"></i></button>
           <button className="mac-btn btn-min" onClick={(e) => { e.stopPropagation(); onMinimize(data.id); }}><i className="fas fa-minus"></i></button>
-          <button className="mac-btn btn-max" onClick={(e) => { e.stopPropagation(); onMaximize(data.id); }}><i className="fas fa-expand-alt"></i></button>
+          <button className={`mac-btn btn-max ${data.isMaximized ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); onMaximize(data.id); }}><i className={`fas ${data.isMaximized ? 'fa-compress-alt' : 'fa-expand-alt'}`}></i></button>
         </div>
         <div className="window-title">{data.title}</div>
       </div>
       <div className="mac-content">{children}</div>
+      {!data.isMaximized && (
+        <>
+          <div className="resize-handle resize-n" onMouseDown={(e) => handleResizeStart('n', e)} />
+          <div className="resize-handle resize-s" onMouseDown={(e) => handleResizeStart('s', e)} />
+          <div className="resize-handle resize-e" onMouseDown={(e) => handleResizeStart('e', e)} />
+          <div className="resize-handle resize-w" onMouseDown={(e) => handleResizeStart('w', e)} />
+          <div className="resize-handle resize-ne" onMouseDown={(e) => handleResizeStart('ne', e)} />
+          <div className="resize-handle resize-nw" onMouseDown={(e) => handleResizeStart('nw', e)} />
+          <div className="resize-handle resize-se" onMouseDown={(e) => handleResizeStart('se', e)} />
+          <div className="resize-handle resize-sw" onMouseDown={(e) => handleResizeStart('sw', e)} />
+        </>
+      )}
     </div>
   );
 }
@@ -211,9 +376,8 @@ function TerminalWindow({ isDark }) {
   mkdir <dir>       - Create directory
   touch <file>      - Create file
   rm <file>         - Remove file
-  open <app>        - Open an app (calculator, game, settings, files, about, projects)
+  open <app>        - Open an app (calculator, game, settings, files, about, projects, gallery, chrome, music)
   cowsay <text>     - Cow says...
-  matrix            - Toggle matrix effect
   uptime            - Show uptime
   ping <host>       - Simulate ping
   history           - Show command history
@@ -224,7 +388,8 @@ function TerminalWindow({ isDark }) {
         const targetDir = args[0] ? resolvePath(args[0]) : currentDir;
         const files = FILE_SYSTEM[targetDir];
         if (files) {
-          newHistory.push({ type: 'output', text: files.join('  ') });
+          const displayNames = files.map(f => typeof f === 'string' ? f : f.name);
+          newHistory.push({ type: 'output', text: displayNames.join('  ') });
         } else {
           newHistory.push({ type: 'error', text: `ls: ${args[0] || targetDir}: No such file or directory` });
         }
@@ -351,7 +516,7 @@ function TerminalWindow({ isDark }) {
 
       case 'open':
         if (!args[0]) {
-          newHistory.push({ type: 'error', text: 'open: specify app name (calculator, game, settings, files, about, projects)' });
+          newHistory.push({ type: 'error', text: 'open: specify app name (calculator, game, settings, files, about, projects, gallery, chrome, music)' });
         } else {
           newHistory.push({ type: 'output', text: `Opening ${args[0]}...` });
           window.dispatchEvent(new CustomEvent('open-app', { detail: args[0].toLowerCase() }));
@@ -564,7 +729,7 @@ function CalculatorApp() {
   );
 }
 
-function SnakeGame() {
+function SnakeGame({ accentColor }) {
   const canvasRef = useRef(null);
   const [gameState, setGameState] = useState('idle');
   const [score, setScore] = useState(0);
@@ -651,7 +816,7 @@ function SnakeGame() {
 
     game.snake.forEach((segment, i) => {
       const alpha = 1 - (i / game.snake.length) * 0.5;
-      ctx.fillStyle = i === 0 ? '#ff6600' : `rgba(255, 102, 0, ${alpha})`;
+      ctx.fillStyle = i === 0 ? (accentColor || '#ff6600') : accentColor === '#ffffff' ? `rgba(255, 255, 255, ${alpha})` : `rgba(255, 102, 0, ${alpha})`;
       ctx.fillRect(segment.x * CELL_SIZE + 1, segment.y * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
       if (i === 0) {
         ctx.fillStyle = '#000';
@@ -672,7 +837,7 @@ function SnakeGame() {
     ctx.fill();
     ctx.fillStyle = '#44ff44';
     ctx.fillRect(game.food.x * CELL_SIZE + CELL_SIZE / 2 - 1, game.food.y * CELL_SIZE + 1, 2, 5);
-  }, []);
+  }, [accentColor]);
 
   useEffect(() => {
     if (gameState === 'playing') {
@@ -726,7 +891,14 @@ function SnakeGame() {
   );
 }
 
-function SettingsApp({ wallpaper, setWallpaper, isDark, setIsDark, accentColor, setAccentColor }) {
+function SettingsApp({ wallpaper, setWallpaper, isDark, setIsDark, accentColor, setAccentColor, customWallpaper, setCustomWallpaper, password, setPassword }) {
+  const [pendingWallpaper, setPendingWallpaper] = useState(null);
+  const [pendingSetting, setPendingSetting] = useState(null);
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [inputPassword, setInputPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const fileInputRef = useRef(null);
+
   const wallpapers = [
     { id: 'default', name: 'Naruto Dark', gradient: 'radial-gradient(circle at 20% 30%, #2a0800 0%, #0a0a10 50%, #051020 100%)' },
     { id: 'ocean', name: 'Ocean Blue', gradient: 'radial-gradient(circle at 30% 40%, #001a33 0%, #003366 40%, #001122 100%)' },
@@ -737,6 +909,44 @@ function SettingsApp({ wallpaper, setWallpaper, isDark, setIsDark, accentColor, 
   ];
 
   const accents = ['#ff6600', '#00d4ff', '#ff4488', '#44ff88', '#ffaa00', '#aa44ff', '#ffffff'];
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPendingWallpaper(event.target.result);
+        setPendingSetting({ type: 'custom-wallpaper' });
+        setShowPasswordPrompt(true);
+        setInputPassword('');
+        setPasswordError('');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const requestPasswordForSetting = (settingType) => {
+    setPendingSetting(settingType);
+    setShowPasswordPrompt(true);
+    setInputPassword('');
+    setPasswordError('');
+  };
+
+  const handleApplySetting = () => {
+    if (inputPassword === ADMIN_PASSWORD) {
+      if (pendingSetting?.type === 'custom-wallpaper') {
+        setCustomWallpaper(pendingWallpaper);
+        setWallpaper('custom');
+      } else if (pendingSetting?.type === 'wallpaper') {
+        setWallpaper(pendingSetting.wallpaperId);
+      }
+      setShowPasswordPrompt(false);
+      setPendingSetting(null);
+      setPendingWallpaper(null);
+    } else {
+      setPasswordError('Incorrect password.');
+    }
+  };
 
   return (
     <div className="settings-app">
@@ -762,10 +972,20 @@ function SettingsApp({ wallpaper, setWallpaper, isDark, setIsDark, accentColor, 
         <h3><i className="fas fa-image"></i> Wallpaper</h3>
         <div className="wallpaper-grid">
           {wallpapers.map(wp => (
-            <button key={wp.id} className={`wallpaper-option ${wallpaper === wp.id ? 'selected' : ''}`} style={{ background: wp.gradient }} onClick={() => setWallpaper(wp.id)}>
+            <button key={wp.id} className={`wallpaper-option ${wallpaper === wp.id ? 'selected' : ''}`} style={{ background: wp.gradient }} onClick={() => requestPasswordForSetting({ type: 'wallpaper', wallpaperId: wp.id })}>
               <span>{wp.name}</span>
             </button>
           ))}
+          {customWallpaper && (
+            <button className={`wallpaper-option ${wallpaper === 'custom' ? 'selected' : ''}`} style={{ backgroundImage: `url(${customWallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center' }} onClick={() => requestPasswordForSetting({ type: 'wallpaper', wallpaperId: 'custom' })}>
+              <span>Custom</span>
+            </button>
+          )}
+        </div>
+        <div className="upload-wallpaper-btn" onClick={() => fileInputRef.current?.click()}>
+          <i className="fas fa-upload"></i>
+          <span>Upload Custom Wallpaper</span>
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
         </div>
       </div>
       <div className="settings-section">
@@ -779,6 +999,28 @@ function SettingsApp({ wallpaper, setWallpaper, isDark, setIsDark, accentColor, 
           <div className="info-row"><span>Browser</span><span>{navigator.userAgent.split(' ').pop()}</span></div>
         </div>
       </div>
+
+      {showPasswordPrompt && (
+        <div className="modal-overlay" onClick={() => { setShowPasswordPrompt(false); setPendingSetting(null); }}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Authentication Required</h3>
+            <p>Enter admin password to apply this change:</p>
+            <input
+              type="password"
+              value={inputPassword}
+              onChange={(e) => setInputPassword(e.target.value)}
+              placeholder="Enter password..."
+              onKeyDown={(e) => { if (e.key === 'Enter') handleApplySetting(); }}
+              autoFocus
+            />
+            {passwordError && <p className="password-error">{passwordError}</p>}
+            <div className="modal-actions">
+              <button className="modal-btn cancel" onClick={() => { setShowPasswordPrompt(false); setPendingSetting(null); }}>Cancel</button>
+              <button className="modal-btn apply" onClick={handleApplySetting}>Apply</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -786,14 +1028,24 @@ function SettingsApp({ wallpaper, setWallpaper, isDark, setIsDark, accentColor, 
 function FileManagerApp() {
   const [currentPath, setCurrentPath] = useState('/');
   const [selected, setSelected] = useState(null);
+  const [viewingImage, setViewingImage] = useState(null);
+  const [viewingProject, setViewingProject] = useState(null);
+  const [viewingResume, setViewingResume] = useState(false);
 
   const items = FILE_SYSTEM[currentPath] || [];
+  const isCertificatesFolder = currentPath === '/Certificates';
+  const isProjectSubfolder = currentPath.startsWith('/Projects/') && currentPath !== '/Projects';
 
   const navigate = (item) => {
-    const newPath = currentPath === '/' ? '/' + item : currentPath + '/' + item;
+    const itemName = typeof item === 'string' ? item : item.name;
+    const newPath = currentPath === '/' ? '/' + itemName : currentPath + '/' + itemName;
     if (FILE_SYSTEM[newPath]) {
       setCurrentPath(newPath);
       setSelected(null);
+    } else if (itemName === 'Resume') {
+      setViewingResume(true);
+    } else if (typeof item === 'object' && item.type === 'image') {
+      setViewingImage(item);
     }
   };
 
@@ -802,9 +1054,45 @@ function FileManagerApp() {
     parts.pop();
     setCurrentPath('/' + parts.join('/') || '/');
     setSelected(null);
+    setViewingProject(null);
   };
 
-  const isFolder = (item) => FILE_SYSTEM[currentPath === '/' ? '/' + item : currentPath + '/' + item];
+  const isFolder = (item) => {
+    const itemName = typeof item === 'string' ? item : item.name;
+    const newPath = currentPath === '/' ? '/' + itemName : currentPath + '/' + itemName;
+    return FILE_SYSTEM[newPath];
+  };
+
+  const getFileIcon = (itemName, item, isFolderFlag) => {
+    if (typeof item === 'object' && item.type === 'image') return 'fa-file-image folder-icon';
+    if (isFolderFlag) return 'fa-folder folder-icon';
+    if (itemName === 'Resume') return 'fa-file-pdf resume-icon';
+    
+    const ext = itemName.split('.').pop().toLowerCase();
+    const iconMap = {
+      'php': 'fa-file-code php-icon',
+      'js': 'fa-file-code js-icon',
+      'jsx': 'fa-file-code jsx-icon',
+      'html': 'fa-file-code html-icon',
+      'css': 'fa-file-code css-icon',
+      'sql': 'fa-file-code sql-icon',
+      'json': 'fa-file-code json-icon',
+      'md': 'fa-file-alt md-icon',
+      'env': 'fa-cog env-icon',
+      'pdf': 'fa-file-pdf pdf-icon',
+      'png': 'fa-file-image png-icon',
+      'jpg': 'fa-file-image jpg-icon',
+      'jpeg': 'fa-file-image jpeg-icon',
+    };
+    return iconMap[ext] || 'fa-file file-icon';
+  };
+
+  const handleProjectClick = (project) => {
+    const projectData = PROJECT_DETAILS.find(p => p.title.toLowerCase().includes(project.toLowerCase()));
+    if (projectData) {
+      setViewingProject(projectData);
+    }
+  };
 
   return (
     <div className="file-manager">
@@ -819,21 +1107,387 @@ function FileManagerApp() {
           ))}
         </div>
       </div>
-      <div className="fm-content">
-        {items.length === 0 ? (
-          <div className="fm-empty">This folder is empty</div>
-        ) : (
-          <div className="fm-grid">
-            {items.map(item => (
-              <div key={item} className={`fm-item ${selected === item ? 'selected' : ''}`} onClick={() => setSelected(item)} onDoubleClick={() => isFolder(item) && navigate(item)}>
-                <i className={`fas ${isFolder(item) ? 'fa-folder folder-icon' : 'fa-file file-icon'}`}></i>
-                <span className="fm-name">{item}</span>
+
+      {viewingProject ? (
+        <div className="fm-project-view">
+          <button className="fm-back-to-projects" onClick={() => setViewingProject(null)}><i className="fas fa-arrow-left"></i> Back to Projects</button>
+          <div className="project-card-new">
+            <h3>{viewingProject.title}</h3>
+            <p>{viewingProject.desc}</p>
+            <div className="tags">
+              {viewingProject.tags.map(tag => <span key={tag} className="tag">{tag}</span>)}
+            </div>
+            {viewingProject.url && (
+              <a href={viewingProject.url} target="_blank" rel="noopener noreferrer" className="project-visit-btn">
+                <i className="fab fa-chrome"></i> Visit Site
+              </a>
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="fm-content">
+            {items.length === 0 ? (
+              <div className="fm-empty">This folder is empty</div>
+            ) : isCertificatesFolder ? (
+              <div className="fm-gallery-view">
+                {items.map((img, i) => (
+                  <div key={i} className={`fm-gallery-item ${selected === img.name ? 'selected' : ''}`} onClick={() => setSelected(img.name)} onDoubleClick={() => setViewingImage(img)}>
+                    <img src={img.url} alt={img.name} loading="lazy" />
+                    <span className="fm-gallery-name">{img.name}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : isProjectSubfolder ? (
+              <div className="fm-project-list">
+                {PROJECT_DETAILS.map((project, i) => (
+                  <div key={i} className="fm-project-item" onClick={() => handleProjectClick(project.title)}>
+                    <i className="fas fa-folder-open"></i>
+                    <div className="fm-project-item-info">
+                      <span className="fm-project-item-name">{project.title}</span>
+                      <span className="fm-project-item-desc">{project.desc}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="fm-grid">
+                {items.map(item => {
+                  const itemName = typeof item === 'string' ? item : item.name;
+                  const isResume = itemName === 'Resume';
+                  return (
+                    <div key={itemName} className={`fm-item ${selected === itemName ? 'selected' : ''}`} onClick={() => setSelected(itemName)} onDoubleClick={() => navigate(item)}>
+                      <i className={`fas ${getFileIcon(itemName, item, isFolder(item))}`}></i>
+                      <span className="fm-name">{itemName}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <div className="fm-status">{items.length} items</div>
+        </>
+      )}
+
+      {viewingResume && (
+        <div className="fm-pdf-viewer" onClick={() => setViewingResume(false)}>
+          <div className="fm-pdf-viewer-content" onClick={(e) => e.stopPropagation()}>
+            <button className="fm-pdf-close" onClick={() => setViewingResume(false)}><i className="fas fa-times"></i></button>
+            <iframe src="/olbido.pdf" title="Resume" />
+          </div>
+        </div>
+      )}
+
+      {viewingImage && (
+        <div className="fm-image-viewer" onClick={() => setViewingImage(null)}>
+          <div className="fm-image-viewer-content" onClick={(e) => e.stopPropagation()}>
+            <button className="fm-image-close" onClick={() => setViewingImage(null)}><i className="fas fa-times"></i></button>
+            <img src={viewingImage.url} alt={viewingImage.name} />
+            <div className="fm-image-name">{viewingImage.name}</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function formatTimeFromSeconds(secs) {
+  const mins = Math.floor(secs / 60);
+  const s = Math.floor(secs % 60);
+  return `${mins}:${s.toString().padStart(2, '0')}`;
+}
+
+function GalleryApp() {
+  const [images] = useState([
+    { id: 1, name: 'Profile', url: '/profile.png', date: '2024-01-15', category: 'favorite' },
+    { id: 2, name: 'Profile 1', url: '/profile1.png', date: '2024-02-20', category: 'favorite' },
+    { id: 3, name: 'Banner', url: '/banner.png', date: '2024-03-10', category: 'hobbies' },
+    { id: 4, name: 'Akatsuki', url: '/akatsuki.png', date: '2024-04-05', category: 'hobbies' },
+    { id: 5, name: 'Konoha', url: '/konoha.png', date: '2024-05-18', category: 'hobbies' },
+    { id: 6, name: 'POS System', url: '/pos.png', date: '2024-06-22', category: 'hobbies' },
+    { id: 7, name: 'BNS', url: '/bns.png', date: '2024-07-10', category: 'hobbies' },
+    { id: 8, name: 'Propesiya', url: '/propesiya.png', date: '2024-08-15', category: 'sunset' },
+    { id: 9, name: 'Certificate 1', url: '/cert1.png', date: '2024-09-01', category: 'other' },
+    { id: 10, name: 'Certificate 2', url: '/cert2.png', date: '2024-09-15', category: 'food' },
+    { id: 11, name: 'Certificate 3', url: '/cert3.png', date: '2024-10-01', category: 'food' },
+    { id: 12, name: 'Certificate 4', url: '/cert4.png', date: '2024-10-15', category: 'sunset' },
+    { id: 13, name: 'Certificate 5', url: '/cert5.png', date: '2024-11-01', category: 'sunset' },
+    { id: 14, name: 'My Pet', url: '/profile.png', date: '2024-12-01', category: 'pet' },
+  ]);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [filter, setFilter] = useState('all');
+
+  const filteredImages = filter === 'all' ? images : images.filter(img => img.category === filter);
+
+  return (
+    <div className="gallery-app">
+      <div className="gallery-header">
+        <div>
+          <h3><i className="fas fa-images"></i> My Photos</h3>
+          <span className="gallery-count">{filteredImages.length} photos</span>
+        </div>
+      </div>
+      <div className="gallery-grid">
+        {filteredImages.map(img => (
+          <div key={img.id} className="gallery-item" onClick={() => setSelectedImage(img)}>
+            <img src={img.url} alt={img.name} loading="lazy" />
+            <span className="gallery-item-name">{img.name}</span>
+          </div>
+        ))}
+      </div>
+      <div className="gallery-filter-bar">
+        <button className={`gallery-filter-btn ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')} title="All Photos">
+          <i className="fas fa-th"></i>
+        </button>
+        <button className={`gallery-filter-btn ${filter === 'favorite' ? 'active' : ''}`} onClick={() => setFilter('favorite')} title="Favorites">
+          <i className="fas fa-heart"></i>
+        </button>
+        <button className={`gallery-filter-btn ${filter === 'pet' ? 'active' : ''}`} onClick={() => setFilter('pet')} title="My Pets">
+          <i className="fas fa-paw"></i>
+        </button>
+        <button className={`gallery-filter-btn ${filter === 'sunset' ? 'active' : ''}`} onClick={() => setFilter('sunset')} title="Sunsets">
+          <i className="fas fa-sun"></i>
+        </button>
+        <button className={`gallery-filter-btn ${filter === 'food' ? 'active' : ''}`} onClick={() => setFilter('food')} title="Food">
+          <i className="fas fa-utensils"></i>
+        </button>
+        <button className={`gallery-filter-btn ${filter === 'hobbies' ? 'active' : ''}`} onClick={() => setFilter('hobbies')} title="Hobbies">
+          <i className="fas fa-gamepad"></i>
+        </button>
+      </div>
+      {selectedImage && (
+        <div className="gallery-modal" onClick={() => setSelectedImage(null)}>
+          <div className="gallery-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="gallery-close" onClick={() => setSelectedImage(null)}><i className="fas fa-times"></i></button>
+            <img src={selectedImage.url} alt={selectedImage.name} />
+            <div className="gallery-modal-name">{selectedImage.name}</div>
+            <div className="gallery-modal-date">{selectedImage.date}</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ChromeApp() {
+  const [url, setUrl] = useState('https://www.wikipedia.org');
+  const [currentUrl, setCurrentUrl] = useState('https://www.wikipedia.org');
+  const [isLoading, setIsLoading] = useState(false);
+  const [history, setHistory] = useState(['https://www.wikipedia.org']);
+  const [historyIndex, setHistoryIndex] = useState(0);
+  const inputRef = useRef(null);
+
+  const navigate = (targetUrl) => {
+    let finalUrl = targetUrl;
+    if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+      finalUrl = 'https://' + targetUrl;
+    }
+    setIsLoading(true);
+    setUrl(finalUrl);
+    setCurrentUrl(finalUrl);
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(finalUrl);
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  };
+
+  const handleGo = () => {
+    if (url.trim()) navigate(url.trim());
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') handleGo();
+  };
+
+  const goBack = () => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setCurrentUrl(history[newIndex]);
+      setUrl(history[newIndex]);
+      setIsLoading(true);
+    }
+  };
+
+  const goForward = () => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      setCurrentUrl(history[newIndex]);
+      setUrl(history[newIndex]);
+      setIsLoading(true);
+    }
+  };
+
+  const refresh = () => {
+    setIsLoading(true);
+    setCurrentUrl(currentUrl);
+  };
+
+  return (
+    <div className="chrome-app">
+      <div className="chrome-toolbar">
+        <div className="chrome-nav-btns">
+          <button className="chrome-nav-btn" onClick={goBack} disabled={historyIndex <= 0}><i className="fas fa-arrow-left"></i></button>
+          <button className="chrome-nav-btn" onClick={goForward} disabled={historyIndex >= history.length - 1}><i className="fas fa-arrow-right"></i></button>
+          <button className="chrome-nav-btn" onClick={refresh}><i className="fas fa-redo"></i></button>
+        </div>
+        <div className="chrome-url-bar">
+          <i className="fas fa-lock"></i>
+          <input ref={inputRef} type="text" value={url} onChange={(e) => setUrl(e.target.value)} onKeyDown={handleKeyDown} placeholder="Search or enter URL..." />
+        </div>
+        <button className="chrome-nav-btn" onClick={handleGo}><i className="fas fa-arrow-right"></i></button>
+      </div>
+      <div className="chrome-content">
+        {isLoading && (
+          <div className="chrome-loading" onLoad={() => setIsLoading(false)}>
+            <div className="chrome-loader"></div>
           </div>
         )}
+        <iframe src={currentUrl} title="Browser" onLoad={() => setIsLoading(false)} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" />
       </div>
-      <div className="fm-status">{items.length} items</div>
+    </div>
+  );
+}
+
+function MusicPlayerApp({ accentColor }) {
+  const [tracks] = useState([
+    { id: 1, title: 'Naruto Main Theme', artist: 'Toshio Masuda', duration: '3:42', cover: '🍃', url: '/music1.mp3' },
+  ]);
+  const [currentTrack, setCurrentTrack] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [volume, setVolume] = useState(0.75);
+  const [currentTime, setCurrentTime] = useState('0:00');
+  const [totalTime, setTotalTime] = useState('3:42');
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    const audio = new Audio(tracks[0].url);
+    audio.volume = volume;
+    audioRef.current = audio;
+
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        setProgress((audio.currentTime / audio.duration) * 100);
+        setCurrentTime(formatTimeFromSeconds(audio.currentTime));
+      }
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+      if (audio.duration) {
+        setTotalTime(formatTimeFromSeconds(audio.duration));
+      }
+    });
+
+    audio.addEventListener('ended', () => {
+      setIsPlaying(false);
+      setProgress(0);
+      setCurrentTime('0:00');
+    });
+
+    return () => {
+      audio.pause();
+      audio.src = '';
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.play().catch(() => {});
+    } else {
+      audioRef.current.pause();
+    }
+  }, [isPlaying]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  const handleSeek = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = ((e.clientX - rect.left) / rect.width) * 100;
+    setProgress(pct);
+    if (audioRef.current && audioRef.current.duration) {
+      audioRef.current.currentTime = (pct / 100) * audioRef.current.duration;
+    }
+  };
+
+  const handleNext = () => {
+    setProgress(0);
+    setCurrentTime('0:00');
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
+  };
+
+  const handlePrev = () => {
+    if (progress > 10) {
+      setProgress(0);
+      setCurrentTime('0:00');
+      if (audioRef.current) audioRef.current.currentTime = 0;
+    } else {
+      setProgress(0);
+      setCurrentTime('0:00');
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(() => {});
+      }
+    }
+  };
+
+  const track = tracks[currentTrack];
+
+  return (
+    <div className="music-player">
+      <div className="music-cover">
+        <div className="music-cover-art">{track?.cover || '🎵'}</div>
+      </div>
+      <div className="music-info">
+        <h3 className="music-title">{track?.title || 'No Track Selected'}</h3>
+        <p className="music-artist">{track?.artist || 'Unknown'}</p>
+      </div>
+      <div className="music-progress">
+        <div className="music-progress-bar" onClick={handleSeek}>
+          <div className="music-progress-fill" style={{ width: `${progress}%`, background: accentColor }}></div>
+        </div>
+        <div className="music-time">
+          <span>{currentTime}</span>
+          <span>{totalTime}</span>
+        </div>
+      </div>
+      <div className="music-controls">
+        <button className="music-ctrl-btn" onClick={handlePrev}><i className="fas fa-step-backward"></i></button>
+        <button className="music-ctrl-btn play-btn" onClick={() => setIsPlaying(!isPlaying)}>
+          <i className={`fas ${isPlaying ? 'fa-pause' : 'fa-play'}`}></i>
+        </button>
+        <button className="music-ctrl-btn" onClick={handleNext}><i className="fas fa-step-forward"></i></button>
+      </div>
+      <div className="music-volume">
+        <i className="fas fa-volume-low"></i>
+        <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} className="music-slider" />
+        <i className="fas fa-volume-high"></i>
+      </div>
+      <div className="music-playlist-header">
+        <span>Playlist</span>
+        <span className="music-track-count">1 track</span>
+      </div>
+      <div className="music-playlist">
+        {tracks.map((t, i) => (
+          <div key={t.id} className={`playlist-track ${i === currentTrack ? 'active' : ''}`} onClick={() => { setCurrentTrack(i); setProgress(0); setIsPlaying(true); if (audioRef.current) { audioRef.current.currentTime = 0; audioRef.current.play().catch(() => {}); } }}>
+            <span className="playlist-track-cover">{t.cover}</span>
+            <div className="playlist-track-info">
+              <span className="playlist-track-title">{t.title}</span>
+              <span className="playlist-track-artist">{t.artist}</span>
+            </div>
+            <span className="playlist-track-duration">{t.duration}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -843,11 +1497,11 @@ function WifiPanel({ isOpen, onClose }) {
   const [connected, setConnected] = useState('Konoha-Network-5G');
 
   const networks = [
-    { name: 'Konoha-Network-5G', signal: 4, secured: true, connected: true },
-    { name: 'Hidden Leaf Cafe', signal: 3, secured: true, connected: false },
-    { name: 'Akatsuki-Lair', signal: 2, secured: true, connected: false },
-    { name: 'Team7-Guest', signal: 3, secured: false, connected: false },
-    { name: 'Hokage-Office', signal: 4, secured: true, connected: false },
+    { name: 'Konoha-Network-5G', signal: 4, secured: true },
+    { name: 'Hidden Leaf Cafe', signal: 3, secured: true },
+    { name: 'Akatsuki-Lair', signal: 2, secured: true },
+    { name: 'Team7-Guest', signal: 3, secured: false },
+    { name: 'Hokage-Office', signal: 4, secured: true },
   ];
 
   if (!isOpen) return null;
@@ -866,7 +1520,7 @@ function WifiPanel({ isOpen, onClose }) {
         <div className="wifi-networks">
           <p className="wifi-connected-to">Connected to: <strong>{connected}</strong></p>
           {networks.map(net => (
-            <div key={net.name} className={`wifi-network ${net.connected ? 'active' : ''}`} onClick={() => setConnected(net.name)}>
+            <div key={net.name} className={`wifi-network ${connected === net.name ? 'active' : ''}`} onClick={() => setConnected(net.name)}>
               <div className="wifi-net-info">
                 <span className="wifi-net-name">{net.name}</span>
                 <span className="wifi-net-sec">{net.secured ? <i className="fas fa-lock"></i> : 'Open'}</span>
@@ -876,7 +1530,7 @@ function WifiPanel({ isOpen, onClose }) {
                   <div key={bar} className={`signal-bar ${bar <= net.signal ? 'filled' : ''}`} />
                 ))}
               </div>
-              {net.connected && <i className="fas fa-check wifi-check"></i>}
+              {connected === net.name && <i className="fas fa-check wifi-check"></i>}
             </div>
           ))}
         </div>
@@ -885,7 +1539,7 @@ function WifiPanel({ isOpen, onClose }) {
   );
 }
 
-function ControlCenter({ isOpen, onClose, isDark, setIsDark }) {
+function ControlCenter({ isOpen, onClose, isDark, setIsDark, wifiOn, setWifiOn, onToggleTheme }) {
   const [brightness, setBrightness] = useState(80);
   const [volume, setVolume] = useState(65);
   const [bluetooth, setBluetooth] = useState(true);
@@ -901,12 +1555,12 @@ function ControlCenter({ isOpen, onClose, isDark, setIsDark }) {
         <button className="close-panel" onClick={onClose}><i className="fas fa-times"></i></button>
       </div>
       <div className="cc-grid">
-        <div className="cc-card cc-wifi">
+        <div className={`cc-card cc-wifi ${wifiOn ? 'active' : ''}`} onClick={() => setWifiOn(!wifiOn)}>
           <i className="fas fa-wifi"></i>
-          <div><span>Wi-Fi</span><small>Konoha-Network</small></div>
+          <div><span>Wi-Fi</span><small>{wifiOn ? 'Connected' : 'Off'}</small></div>
         </div>
         <div className={`cc-card cc-bluetooth ${bluetooth ? 'active' : ''}`} onClick={() => setBluetooth(!bluetooth)}>
-          <i className="fas fa-bluetooth-b"></i>
+          <i className="fab fa-bluetooth"></i>
           <div><span>Bluetooth</span><small>{bluetooth ? 'On' : 'Off'}</small></div>
         </div>
         <div className={`cc-card cc-airdrop ${airdrop ? 'active' : ''}`} onClick={() => setAirdrop(!airdrop)}>
@@ -930,7 +1584,7 @@ function ControlCenter({ isOpen, onClose, isDark, setIsDark }) {
       </div>
       <div className="cc-toggle-row">
         <span>Dark Mode</span>
-        <button className={`wifi-toggle ${isDark ? 'on' : 'off'}`} onClick={() => setIsDark(!isDark)}></button>
+        <button className={`wifi-toggle ${isDark ? 'on' : 'off'}`} onClick={onToggleTheme}></button>
       </div>
     </div>
   );
@@ -984,9 +1638,11 @@ function SpotlightSearch({ isOpen, onClose, onOpenApp }) {
     { id: 'calculator', name: 'Calculator', icon: 'fa-calculator', keywords: ['calc', 'math', 'compute'] },
     { id: 'game', name: 'Snake Game', icon: 'fa-gamepad', keywords: ['play', 'snake', 'game', 'fun'] },
     { id: 'settings', name: 'Settings', icon: 'fa-gear', keywords: ['preferences', 'config', 'theme'] },
-    { id: 'files', name: 'File Manager', icon: 'fa-folder', keywords: ['files', 'documents', 'finder'] },
+    { id: 'files', name: 'File Manager', icon: 'fa-folder', keywords: ['files', 'documents', 'finder', 'resume', 'skills', 'certificates'] },
     { id: 'about', name: 'About Me', icon: 'fa-user-ninja', keywords: ['profile', 'info', 'about'] },
-    { id: 'projects', name: 'Projects', icon: 'fa-folder-open', keywords: ['work', 'portfolio', 'missions'] },
+    { id: 'gallery', name: 'Gallery', icon: 'fa-images', keywords: ['photos', 'images', 'pictures'] },
+    { id: 'chrome', name: 'Chrome', icon: 'fa-globe', keywords: ['browser', 'web', 'internet', 'surf'] },
+    { id: 'music', name: 'Music Player', icon: 'fa-music', keywords: ['music', 'audio', 'songs', 'player', 'mp3'] },
   ];
 
   const results = query
@@ -1056,15 +1712,24 @@ export default function App() {
   const [windows, setWindows] = useState(INITIAL_WINDOWS);
   const [highestZ, setHighestZ] = useState(10);
   const [time, setTime] = useState(new Date());
-  const [wallpaper, setWallpaper] = useState('default');
-  const [isDark, setIsDark] = useState(true);
-  const [accentColor, setAccentColor] = useState('#ff6600');
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [pendingSetting, setPendingSetting] = useState(null);
+  const [pendingWallpaper, setPendingWallpaper] = useState(null);
+  const [inputPassword, setInputPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  const savedSettings = loadSettings();
+  const [wallpaper, setWallpaper] = useState(savedSettings?.wallpaper || 'default');
+  const [customWallpaper, setCustomWallpaper] = useState(savedSettings?.customWallpaper || null);
+  const [isDark, setIsDark] = useState(savedSettings?.isDark ?? true);
+  const [accentColor, setAccentColor] = useState(savedSettings?.accentColor || '#ff6600');
   const [showWifi, setShowWifi] = useState(false);
   const [showControlCenter, setShowControlCenter] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSpotlight, setShowSpotlight] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [bootScreen, setBootScreen] = useState(true);
+  const [wifiOn, setWifiOn] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => setBootScreen(false), 2000);
@@ -1080,13 +1745,12 @@ export default function App() {
     const handleOpenApp = (e) => openWindow(e.detail);
     const handleCloseApp = (e) => closeWindow(e.detail);
     window.addEventListener('open-app', handleOpenApp);
-    window.addEventListener('close-app', handleOpenApp);
     window.addEventListener('close-app', handleCloseApp);
     return () => {
       window.removeEventListener('open-app', handleOpenApp);
       window.removeEventListener('close-app', handleCloseApp);
     };
-  }, []);
+  });
 
   useEffect(() => {
     const handleKey = (e) => {
@@ -1103,6 +1767,11 @@ export default function App() {
     document.documentElement.style.setProperty('--accent', accentColor);
   }, [accentColor]);
 
+  useEffect(() => {
+    const settings = { wallpaper, customWallpaper, isDark, accentColor };
+    localStorage.setItem('shinobios-settings', JSON.stringify(settings));
+  }, [wallpaper, customWallpaper, isDark, accentColor]);
+
   const wallpapers = {
     default: 'radial-gradient(circle at 20% 30%, #2a0800 0%, #0a0a10 50%, #051020 100%)',
     ocean: 'radial-gradient(circle at 30% 40%, #001a33 0%, #003366 40%, #001122 100%)',
@@ -1110,6 +1779,13 @@ export default function App() {
     sunset: 'radial-gradient(circle at 50% 60%, #3a1a00 0%, #1a0a2a 50%, #0a0a1a 100%)',
     aurora: 'radial-gradient(circle at 20% 50%, #002a2a 0%, #0a0a3a 40%, #1a0a2a 100%)',
     minimal: 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)',
+  };
+
+  const getBackground = () => {
+    if (wallpaper === 'custom' && customWallpaper) {
+      return { backgroundImage: `url(${customWallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center' };
+    }
+    return { background: wallpapers[wallpaper] || wallpapers.default };
   };
 
   const openWindow = (id) => {
@@ -1129,10 +1805,13 @@ export default function App() {
   };
 
   const maximizeWindow = (id) => {
-    setWindows(prev => ({
-      ...prev,
-      [id]: { ...prev[id], x: 0, y: 30, width: window.innerWidth, height: window.innerHeight - 30 }
-    }));
+    setWindows(prev => {
+      const win = prev[id];
+      if (win.isMaximized) {
+        return { ...prev, [id]: { ...win, isMaximized: false } };
+      }
+      return { ...prev, [id]: { ...win, isMaximized: true, prevBounds: { x: win.x, y: win.y, width: win.width, height: win.height } } };
+    });
     focusWindow(id);
   };
 
@@ -1157,11 +1836,13 @@ export default function App() {
 
   const desktopIcons = [
     { id: 'about', icon: 'fa-user-ninja', label: 'About Me' },
-    { id: 'projects', icon: 'fa-folder-open', label: 'Projects' },
     { id: 'terminal', icon: 'fa-terminal', label: 'Terminal' },
     { id: 'files', icon: 'fa-folder', label: 'Files' },
+    { id: 'gallery', icon: 'fa-images', label: 'Gallery' },
+    { id: 'chrome', icon: 'fa-globe', label: 'Chrome' },
     { id: 'calculator', icon: 'fa-calculator', label: 'Calculator' },
     { id: 'game', icon: 'fa-gamepad', label: 'Snake Game' },
+    { id: 'music', icon: 'fa-music', label: 'Music' },
     { id: 'settings', icon: 'fa-gear', label: 'Settings' },
   ];
 
@@ -1179,10 +1860,9 @@ export default function App() {
   }
 
   return (
-    <div className="os-wrapper" style={{ background: wallpapers[wallpaper] }} data-dark={isDark ? 'true' : 'false'}>
+    <div className={`os-wrapper ${isDark ? 'dark' : 'light'}`} style={getBackground()}>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-      {/* Menu Bar */}
       <div className="menubar">
         <div className="menu-left">
           <span className="menu-item menu-leaf" onClick={() => setShowSpotlight(true)}><i className="fas fa-leaf"></i></span>
@@ -1194,10 +1874,10 @@ export default function App() {
         </div>
         <div className="menu-right">
           <span className="menu-item" onClick={() => { setShowControlCenter(!showControlCenter); setShowWifi(false); setShowNotifications(false); setShowCalendar(false); }}>
-            <i className={`fas ${showControlCenter ? 'fa-sliders' : 'fa-sliders'}`}></i>
+            <i className="fas fa-sliders"></i>
           </span>
           <span className="menu-item" onClick={() => { setShowWifi(!showWifi); setShowControlCenter(false); setShowNotifications(false); setShowCalendar(false); }}>
-            <i className="fas fa-wifi"></i>
+            <i className={`fas fa-wifi ${wifiOn ? '' : 'wifi-off'}`}></i>
           </span>
           <span className="menu-item"><i className="fas fa-battery-three-quarters"></i></span>
           <span className="menu-item" onClick={() => { setShowNotifications(!showNotifications); setShowWifi(false); setShowControlCenter(false); setShowCalendar(false); }}>
@@ -1210,30 +1890,19 @@ export default function App() {
         </div>
       </div>
 
-      {/* Desktop Icons */}
-      <div className="desktop-icons">
-        {desktopIcons.map(icon => (
-          <div key={icon.id} className="desktop-icon" onDoubleClick={() => openWindow(icon.id)}>
-            <i className={`fas ${icon.icon}`}></i>
-            <span>{icon.label}</span>
-          </div>
-        ))}
-      </div>
 
-      {/* Calendar Widget */}
+
       {showCalendar && (
         <div className="calendar-dropdown" onClick={(e) => e.stopPropagation()}>
           <CalendarWidget />
         </div>
       )}
 
-      {/* Panels */}
       <WifiPanel isOpen={showWifi} onClose={() => setShowWifi(false)} />
-      <ControlCenter isOpen={showControlCenter} onClose={() => setShowControlCenter(false)} isDark={isDark} setIsDark={setIsDark} />
+      <ControlCenter isOpen={showControlCenter} onClose={() => setShowControlCenter(false)} isDark={isDark} setIsDark={setIsDark} wifiOn={wifiOn} setWifiOn={setWifiOn} onToggleTheme={() => setIsDark(!isDark)} />
       <NotificationPanel isOpen={showNotifications} onClose={() => setShowNotifications(false)} />
       <SpotlightSearch isOpen={showSpotlight} onClose={() => setShowSpotlight(false)} onOpenApp={handleSpotlightOpenApp} />
 
-      {/* Windows */}
       <Window data={windows.about} onInteract={focusWindow} onClose={closeWindow} onMinimize={minimizeWindow} onMaximize={maximizeWindow}>
         <div className="about-content">
           <div className="about-avatar"><i className="fas fa-user-ninja"></i></div>
@@ -1250,24 +1919,6 @@ export default function App() {
         </div>
       </Window>
 
-      <Window data={windows.projects} onInteract={focusWindow} onClose={closeWindow} onMinimize={minimizeWindow} onMaximize={maximizeWindow}>
-        <div className="projects-content">
-          {[
-            { title: 'Malnutrition Profiling System (MPMS)', desc: 'System designed to monitor and manage nutritional data for community health initiatives.', tags: ['Full-Stack', 'Database', 'PHP'] },
-            { title: "Librong James POS", desc: 'Point of Sale system for Car Accessories inventory management and transaction tracking.', tags: ['Laravel', 'PHP', 'Render'] },
-            { title: 'Goldtown Inventory', desc: 'Robust inventory tracking application for precise stock management.', tags: ['Supabase', 'Vercel'] },
-          ].map((project, i) => (
-            <div key={i} className="project-card-new">
-              <h3>{project.title}</h3>
-              <p>{project.desc}</p>
-              <div className="tags">
-                {project.tags.map(tag => <span key={tag} className="tag">{tag}</span>)}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Window>
-
       <Window data={windows.terminal} onInteract={focusWindow} onClose={closeWindow} onMinimize={minimizeWindow} onMaximize={maximizeWindow}>
         <TerminalWindow isDark={isDark} />
       </Window>
@@ -1277,18 +1928,29 @@ export default function App() {
       </Window>
 
       <Window data={windows.game} onInteract={focusWindow} onClose={closeWindow} onMinimize={minimizeWindow} onMaximize={maximizeWindow}>
-        <SnakeGame />
+        <SnakeGame accentColor={accentColor} />
       </Window>
 
       <Window data={windows.settings} onInteract={focusWindow} onClose={closeWindow} onMinimize={minimizeWindow} onMaximize={maximizeWindow}>
-        <SettingsApp wallpaper={wallpaper} setWallpaper={setWallpaper} isDark={isDark} setIsDark={setIsDark} accentColor={accentColor} setAccentColor={setAccentColor} />
+        <SettingsApp wallpaper={wallpaper} setWallpaper={setWallpaper} isDark={isDark} setIsDark={setIsDark} accentColor={accentColor} setAccentColor={setAccentColor} customWallpaper={customWallpaper} setCustomWallpaper={setCustomWallpaper} password={inputPassword} setPassword={setInputPassword} />
       </Window>
 
       <Window data={windows.files} onInteract={focusWindow} onClose={closeWindow} onMinimize={minimizeWindow} onMaximize={maximizeWindow}>
         <FileManagerApp />
       </Window>
 
-      {/* Dock */}
+      <Window data={windows.gallery} onInteract={focusWindow} onClose={closeWindow} onMinimize={minimizeWindow} onMaximize={maximizeWindow}>
+        <GalleryApp />
+      </Window>
+
+      <Window data={windows.chrome} onInteract={focusWindow} onClose={closeWindow} onMinimize={minimizeWindow} onMaximize={maximizeWindow}>
+        <ChromeApp />
+      </Window>
+
+      <Window data={windows.music} onInteract={focusWindow} onClose={closeWindow} onMinimize={minimizeWindow} onMaximize={maximizeWindow}>
+        <MusicPlayerApp accentColor={accentColor} />
+      </Window>
+
       <div className="dock-container">
         {Object.values(windows).map((win) => (
           <div
